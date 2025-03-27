@@ -6,42 +6,52 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //Change this listview for static content
       body: ListView(
         children: [
-          Container(
-            height: 20,
-            color: Colors.amber.shade800,
-            child: const Icon(Icons.menu),
-          ),
           Column(
             children: [
+              //Logo place Size 225x225 pixels, remember to fix pubspec.yaml to allow images
               Container(
-                height: 40,
-                color: Colors.blue,
+                height: 225,
+                width: 225,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('assets/images/logo500t.png')),
+                ),
               ),
-              Container(
-                child: const Text("Shop Only What You Need"),
-              )
+
+              //add another container to fix icon text?
             ],
           ),
           Container(
-            height: 40,
+            height: 70,
             color: Colors.green,
             child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceBetween, //Separate the elements horizontally
               children: [
                 Text("Search here"),
                 Icon(Icons.search),
               ],
             ),
           ),
-          Container(
-            height: 30,
-            color: Colors.yellow,
-            child: const Text("Categories"),
-          ),
-          Container(
-            child: const Text("Scroll view of categories"),
+          Column(
+            children: [
+              Container(
+                height: 30,
+                color: Colors.yellow,
+                child: const Text("Categories"),
+              ),
+              Container(
+                width: 200,
+                height: 500,
+                color: Colors.orange,
+                //Scrollable list of items on vertical
+                child: const Text("Scroll view of categories"),
+              ),
+            ],
+            //Scrollable categories on horizontal
           ),
         ],
       ),

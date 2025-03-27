@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/screens/home_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -27,13 +28,10 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Item Minder'),
-        backgroundColor: Colors.amber.shade800,
-      ),
+      appBar: AppBar(),
       body: appScreens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.amber.shade800,
+        backgroundColor: AppStyles().getPrimaryColor(),
         unselectedItemColor: Colors.white,
         selectedItemColor: Colors.black,
         type: BottomNavigationBarType.fixed,
