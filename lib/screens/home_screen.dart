@@ -1,4 +1,10 @@
+import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/res/media.dart';
+import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/base/widgets/logo_title.dart';
+import 'package:item_minder_flutterapp/base/widgets/search_bar.dart';
+import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,33 +15,14 @@ class HomeScreen extends StatelessWidget {
       //Change this listview for static content
       body: ListView(
         children: [
-          Column(
+          const Column(
             children: [
-              //Logo place Size 225x225 pixels, remember to fix pubspec.yaml to allow images
-              Container(
-                height: 225,
-                width: 225,
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                      image: AssetImage('assets/images/logo500t.png')),
-                ),
-              ),
-
-              //add another container to fix icon text?
+              AppLogoTitle(), //Logo widget place Size 140x140 pixels, remember to fix pubspec.yaml to allow images
+              AppTitleText(), //Logo widget text place Size 40x340 pixels, remember to fix pubspec.yaml to allow images
             ],
           ),
-          Container(
-            height: 70,
-            color: Colors.green,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceBetween, //Separate the elements horizontally
-              children: [
-                Text("Search here"),
-                Icon(Icons.search),
-              ],
-            ),
-          ),
+          const SizedBox(height: 12),
+          const AppSearchBar(), //Search bar configuration
           Column(
             children: [
               Container(
