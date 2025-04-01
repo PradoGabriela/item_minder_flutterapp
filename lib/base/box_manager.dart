@@ -19,4 +19,11 @@ class BoxManager {
   Box<AppItem> get itemBox {
     return Hive.box('appItemBox');
   }
+
+  void clearAllBox() {
+    itemBox.clear();
+    if (kDebugMode) {
+      print("Clearing Database");
+    }
+  }
 }

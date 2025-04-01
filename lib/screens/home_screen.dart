@@ -13,8 +13,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       //Change this listview for static content
       body: ListView(
+        physics: NeverScrollableScrollPhysics(),
         children: [
           Column(
             children: [

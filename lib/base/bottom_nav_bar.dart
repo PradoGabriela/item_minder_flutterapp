@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/screens/debugging_screen.dart';
 import 'package:item_minder_flutterapp/screens/home_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -14,7 +15,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     HomeScreen(),
     const Text('Shopping List'),
     const Text('Calendar'),
-    const Text('Profile'),
+    DebugScreen(),
   ];
 
   var _selectedIndex = 0;

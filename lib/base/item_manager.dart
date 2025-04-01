@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:item_minder_flutterapp/base/box_manager.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
 import 'package:item_minder_flutterapp/base/item.dart';
 
@@ -26,6 +27,11 @@ class ItemManager {
     if (kDebugMode) {
       print("Item added: ${newItem.toString()}"); // Print the added item
     }
+  }
+
+  void addMiscItem() async {
+    AppItem miscItem = AppItem();
+    BoxManager().itemBox.add(miscItem);
   }
 
   void removeItem(AppItem item) {
