@@ -66,7 +66,13 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
         children: [
           Container(
             height: 40,
-            child: Text(AppCategories().categoriesDB[_selectedIndex],
+            child: Text(
+                AppCategories().categoriesDB[_selectedIndex].replaceFirst(
+                      AppCategories().categoriesDB[_selectedIndex][0],
+                      AppCategories()
+                          .categoriesDB[_selectedIndex][0]
+                          .toUpperCase(),
+                    ),
                 style: AppStyles().catTitleStyle),
           ),
           Padding(
