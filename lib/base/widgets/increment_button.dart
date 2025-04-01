@@ -14,6 +14,7 @@ class _AppIncrementButtonState extends State<AppIncrementButton> {
   void _incrementQuantity(dynamic item) {
     setState(() {
       item.quantity++;
+      item.save();
       if (kDebugMode) {
         print(item.quantity);
       }
