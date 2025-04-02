@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:item_minder_flutterapp/base/categories_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/item.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
@@ -49,13 +49,14 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
           }
           //checking max number of categories
         } else if (details.primaryVelocity! < 0) {
-          currentIndex--;
           //checking if is less than zero
           if (currentIndex <= 0) {
-            _onCategorySwipped(0);
-          } else {
-            _onCategorySwipped(currentIndex);
+            return;
           }
+          currentIndex--;
+          //checking if is less than zero
+
+          _onCategorySwipped(currentIndex);
 
           if (kDebugMode) {
             print('Swiped left $_selectedIndex');

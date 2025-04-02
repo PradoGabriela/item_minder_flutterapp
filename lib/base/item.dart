@@ -68,7 +68,7 @@ class AppItem extends HiveObject {
   @HiveField(6)
   String type = "miscellaneous item"; // Default type is an empty string
   @HiveField(7)
-  int quantity = 0; // Default quantity is 0
+  int quantity = 3; // Default quantity is 0
   @HiveField(8)
   int minQuantity = 1; // Default minimum quantity is 3
   @HiveField(9)

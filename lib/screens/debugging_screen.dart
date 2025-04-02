@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/box_manager.dart';
-import 'package:item_minder_flutterapp/base/item_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 
 class DebugScreen extends StatelessWidget {
   const DebugScreen({super.key});

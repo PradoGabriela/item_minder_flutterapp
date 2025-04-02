@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class AppStyles {
   //UI Palette variables
   static final Color _primaryColor = Colors.amber.shade800;
+  static final Color _secondaryColor =
+      const Color.from(alpha: 0.5, red: 1, green: 0.569, blue: 0);
   static final TextStyle _titleStyle = TextStyle(
     fontSize: 12.0,
     color: _primaryColor,
@@ -25,5 +27,9 @@ class AppStyles {
 
   TextStyle get catTitleStyle {
     return _catTitleStyle;
+  }
+
+  Color getSecondaryColor() {
+    return _secondaryColor;
   }
 }
