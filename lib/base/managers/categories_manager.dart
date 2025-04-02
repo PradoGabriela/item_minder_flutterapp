@@ -15,6 +15,10 @@ class AppCategories {
     return myCategories;
   }
 
+  List<Categories> get categoriesDBRaw {
+    return Categories.values;
+  }
+
   Future<List<dynamic>> getItemsByCategory(String category) async {
     // Retrieve and filter the items based on the category
     var filteredItems = BoxManager().itemBox.values.where((item) {

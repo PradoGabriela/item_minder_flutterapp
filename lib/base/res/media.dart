@@ -9,6 +9,9 @@ class AppMedia {
   static const String _otherIcon = '$_iconsBasePath/logo.png';
   static const String _addImgIcon = '$_iconsBasePath/logo.png';
 
+  //Images for Items
+  static const String bed = '$_basePath/bed.png';
+
   String get logo => _logo;
   String get logoText => _logoText;
   String get logoTop => _logoTop;

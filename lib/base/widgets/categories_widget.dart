@@ -4,6 +4,7 @@ import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/item.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
+import 'package:item_minder_flutterapp/screens/add_item_screen.dart';
 
 class CategoriesWidget extends StatefulWidget {
   const CategoriesWidget({super.key});
@@ -106,8 +107,15 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                           ),
                           iconSize: 60,
 
-                          onPressed:
-                              () {}, // You can customize the icon's appearance
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => AddItemScreen(
+                                      currentCategory: AppCategories()
+                                          .categoriesDBRaw[_selectedIndex])),
+                            );
+                          }, // You can customize the icon's appearance
                         ),
                         Text(
                           'Add Item', // Your label text here

@@ -4,6 +4,7 @@ import 'package:item_minder_flutterapp/base/widgets/categories_widget.dart';
 import 'package:item_minder_flutterapp/base/widgets/logo_title.dart';
 import 'package:item_minder_flutterapp/base/widgets/search_bar.dart';
 import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
+import 'package:item_minder_flutterapp/screens/notifications_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -22,7 +23,13 @@ class HomeScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => NotificationScreen()),
+                      );
+                    },
                     icon: const Icon(Icons.notifications_on),
                     color: AppStyles().getPrimaryColor(),
                   ),

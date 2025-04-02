@@ -38,7 +38,7 @@ class NotificationManager {
     AppNotification notification =
         AppNotification.custom("$_maxNotification $message");
     addNotificationToDatabase(notification);
-    _showNotification("Stop", "$_minNotification $message");
+    _showNotification("Stop Please!", "$_maxNotification $message");
   }
 
   void addNotificationToDatabase(AppNotification notification) {

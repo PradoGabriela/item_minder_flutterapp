@@ -9,6 +9,9 @@ class AppNotification extends HiveObject {
   @HiveField(1)
   String information = "test Notification";
 
+  @HiveField(2)
+  bool isRead = false;
+
   AppNotification();
   AppNotification.custom(this.information);
 }

@@ -18,17 +18,20 @@ class AppNotificationAdapter extends TypeAdapter<AppNotification> {
     };
     return AppNotification()
       ..time = fields[0] as DateTime
-      ..information = fields[1] as String;
+      ..information = fields[1] as String
+      ..isRead = fields[2] as bool;
   }
 
   @override
   void write(BinaryWriter writer, AppNotification obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.time)
       ..writeByte(1)
-      ..write(obj.information);
+      ..write(obj.information)
+      ..writeByte(2)
+      ..write(obj.isRead);
   }
 
   @override
