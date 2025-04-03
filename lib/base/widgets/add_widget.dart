@@ -4,7 +4,6 @@ import 'package:item_minder_flutterapp/base/item.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/shelves_selector.dart';
-import 'package:item_minder_flutterapp/base/widgets/type_selector.dart';
 
 class AddWidget extends StatefulWidget {
   final dynamic currentCategory;
@@ -53,15 +52,14 @@ class _AddWidgetState extends State<AddWidget> {
                     children: [
                       //First Menu
                       ShelvesSelector(currentCategory: widget.currentCategory),
-                      //Second Menu
-                      TypeSelector(currentCategory: widget.currentCategory),
+
                       Container(
                         height: 200,
                         width: 200,
                         decoration: BoxDecoration(
                           border: Border.all(
                               color: AppStyles().getPrimaryColor(), width: 3),
-                          image: DecorationImage(
+                          image: const DecorationImage(
                             image: AssetImage('assets/images/bed.png'),
                             fit: BoxFit.contain,
                           ),
