@@ -25,9 +25,18 @@ int _selectedIndex = 0;
 int _maxIndex = AppCategories().categoriesDB.length - 1;
 
 class _CategoriesWidgetState extends State<CategoriesWidget> {
+  List<String> dropValueList = AppCategories().categoriesDB;
+  String dropdownValue = "";
+  int _dropSelectedIndex = 0;
+
   void _onCategorySwipped(int index) {
     setState(() {
       _selectedIndex = index;
+      dropdownValue = dropValueList[index];
+      if (kDebugMode) {
+        print('Selected index $_selectedIndex');
+        print('DropVAlue $dropdownValue');
+      }
     });
   }
 
@@ -43,6 +52,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
             _onCategorySwipped(_maxIndex);
           } else {
             _onCategorySwipped(currentIndex);
+            _dropSelectedIndex = currentIndex;
           }
 
           if (kDebugMode) {
@@ -66,16 +76,64 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
       },
       child: Column(
         children: [
-          Container(
-            height: 40,
-            child: Text(
-                AppCategories().categoriesDB[_selectedIndex].replaceFirst(
-                      AppCategories().categoriesDB[_selectedIndex][0],
-                      AppCategories()
-                          .categoriesDB[_selectedIndex][0]
-                          .toUpperCase(),
-                    ),
-                style: AppStyles().catTitleStyle),
+          SizedBox(
+            height: 60,
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              DropdownButton<String>(
+                value: dropValueList.contains(dropdownValue)
+                    ? dropdownValue
+                    : dropValueList.first, // Ensure value is valid
+                icon: const Icon(Icons.arrow_drop_down_circle_rounded),
+                iconEnabledColor: AppStyles().getPrimaryColor(),
+                iconSize: 32,
+                elevation: 20,
+                underline: const SizedBox(),
+                dropdownColor: AppStyles().getPrimaryColor(),
+                menuMaxHeight: 400,
+                borderRadius: BorderRadius.circular(20),
+                alignment: const AlignmentDirectional(0, 40),
+
+                style: AppStyles().catTitleStyle.copyWith(color: Colors.white),
+                //isExpanded: true, // This makes the dropdown take full width
+                selectedItemBuilder: (BuildContext context) {
+                  return dropValueList.map<Widget>((String item) {
+                    return Center(
+                      child: Text(
+                        item.replaceFirst(item[0], item[0].toUpperCase()),
+                        style: AppStyles().catTitleStyle.copyWith(fontSize: 24),
+                      ),
+                    );
+                  }).toList();
+                },
+
+                onChanged: (String? value) {
+                  // This is called when the user selects an item.
+                  setState(() {
+                    dropdownValue = value!;
+
+                    _dropSelectedIndex =
+                        _dropSelectedIndex = dropValueList.indexOf(value);
+
+                    _selectedIndex = _dropSelectedIndex;
+
+                    if (kDebugMode) {
+                      print('Selected index $_dropSelectedIndex');
+                      print('DropVAlue $dropdownValue');
+                    }
+                  });
+                },
+                items:
+                    dropValueList.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(
+                        value.replaceFirst(value[0], value[0].toUpperCase())),
+                    // This is the text that will be displayed in the dropdown menu
+                  );
+                }).toList(),
+              ),
+              const SizedBox(width: 10),
+            ]),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -111,10 +169,13 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => AddItemScreen(
-                                      currentCategory: AppCategories()
-                                          .categoriesDBRaw[_selectedIndex])),
-                            );
+                                builder: (context) => AddItemScreen(
+                                    currentCategory: AppCategories()
+                                        .categoriesDBRaw[_selectedIndex]),
+                              ),
+                            ).then((_) {
+                              setState(() {});
+                            });
                           }, // You can customize the icon's appearance
                         ),
                         Text(
@@ -155,8 +216,18 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                                 ),
                                 iconSize: 60,
 
-                                onPressed:
-                                    () {}, // You can customize the icon's appearance
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddItemScreen(
+                                          currentCategory: AppCategories()
+                                              .categoriesDBRaw[_selectedIndex]),
+                                    ),
+                                  ).then((_) {
+                                    setState(() {});
+                                  });
+                                }, // You can customize the icon's appearance
                               ),
                               Text(
                                 'Add Item', // Your label text here

@@ -15,7 +15,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       //Change this listview for static content
       body: ListView(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         children: [
           Column(
             children: [
@@ -40,14 +40,14 @@ class HomeScreen extends StatelessWidget {
                   )
                 ],
               ),
-              AppLogoTitle(), //Logo widget place Size 140x140 pixels, remember to fix pubspec.yaml to allow images
-              AppTitleText(), //Logo widget text place Size 40x340 pixels, remember to fix pubspec.yaml to allow images
+              const AppLogoTitle(), //Logo widget place Size 140x140 pixels, remember to fix pubspec.yaml to allow images
+              const AppTitleText(), //Logo widget text place Size 40x340 pixels, remember to fix pubspec.yaml to allow images
             ],
           ),
-          SizedBox(height: 12),
-          AppSearchBar(), //Search bar configuration
-          SizedBox(height: 12),
-          CategoriesWidget()
+          const SizedBox(height: 12),
+          const AppSearchBar(), //Search bar configuration
+          const SizedBox(height: 12),
+          const CategoriesWidget()
         ],
       ),
     );

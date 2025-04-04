@@ -29,6 +29,68 @@ class ItemManager {
     }
   }
 
+  void addCustomItem(
+      String brandName,
+      String description,
+      String iconUrl,
+      String imageUrl,
+      String category,
+      double price,
+      String type,
+      int quantity,
+      int minQuantity,
+      int maxQuantity,
+      bool isAutoadd) async {
+    AppItem customItem = AppItem.custom(
+        brandName,
+        description,
+        iconUrl,
+        imageUrl,
+        category,
+        price,
+        type,
+        quantity,
+        minQuantity,
+        maxQuantity,
+        isAutoadd);
+    // Add a new AppItem to the list and box
+    BoxManager().itemBox.add(customItem);
+    if (kDebugMode) {
+      print(
+          "Custom item added: ${customItem.toString()}"); // Print the added item
+    }
+  }
+
+  void editItem(
+      AppItem item,
+      String brandName,
+      String description,
+      String iconUrl,
+      String imageUrl,
+      String category,
+      double price,
+      String type,
+      int quantity,
+      int minQuantity,
+      int maxQuantity,
+      bool isAutoadd) async {
+    // Edit an existing AppItem in the list and box
+    item.brandName = brandName;
+    item.description = description;
+    item.iconUrl = iconUrl;
+    item.imageUrl = imageUrl;
+    item.category = category;
+    item.price = price;
+    item.type = type;
+    item.quantity = quantity;
+    item.minQuantity = minQuantity;
+    item.maxQuantity = maxQuantity;
+    item.isAutoAdd = isAutoadd;
+
+    // Save the changes to the Hive box
+    await BoxManager().itemBox.put(item.key, item);
+  }
+
   void addMiscItem() async {
     AppItem miscItem = AppItem();
     BoxManager().itemBox.add(miscItem);

@@ -27,7 +27,7 @@ class AppItemAdapter extends TypeAdapter<AppItem> {
       ..quantity = fields[7] as int
       ..minQuantity = fields[8] as int
       ..maxQuantity = fields[9] as int
-      .._isAutoAdd = fields[10] as bool
+      ..isAutoAdd = fields[10] as bool
       ..addedDateString = fields[11] as String;
   }
 
@@ -56,7 +56,7 @@ class AppItemAdapter extends TypeAdapter<AppItem> {
       ..writeByte(9)
       ..write(obj.maxQuantity)
       ..writeByte(10)
-      ..write(obj._isAutoAdd)
+      ..write(obj.isAutoAdd)
       ..writeByte(11)
       ..write(obj.addedDateString);
   }

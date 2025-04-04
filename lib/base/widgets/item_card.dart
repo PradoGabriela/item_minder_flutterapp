@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/bottom_buttons.dart';
+import 'package:item_minder_flutterapp/screens/edit_item_screen.dart';
 
 class ItemCard extends StatefulWidget {
   final String itemType;
@@ -45,12 +46,23 @@ class _ItemCardState extends State<ItemCard> {
         ),
         //Tapping Functions
         child: InkResponse(
-          onDoubleTap: () {
+          onLongPress: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditItemScreen(
+                  passItem: widget.myItem,
+                ),
+              ),
+            ).then((_) {
+              setState(() {});
+            });
+
             setState(() {
               _isHolding = true;
             });
             if (kDebugMode) {
-              print('double tapping');
+              print('holding');
             }
           },
           onTapCancel: () {

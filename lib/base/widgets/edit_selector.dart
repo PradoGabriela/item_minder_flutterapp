@@ -6,28 +6,31 @@ import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 
-class ShelvesSelector extends StatefulWidget {
-  final dynamic currentCategory;
+class EditSelector extends StatefulWidget {
+  final dynamic passItem;
+  const EditSelector({super.key, required this.passItem});
 
-  const ShelvesSelector({super.key, required this.currentCategory});
   @override
-  State<ShelvesSelector> createState() => _ShelvesSelectorState();
+  State<EditSelector> createState() => _EditSelectorState();
 }
 
-class _ShelvesSelectorState extends State<ShelvesSelector> {
+class _EditSelectorState extends State<EditSelector> {
+  bool _isEnabled = false; //to enable or disable the edition
+
 //Dropdown Setup
   List<String> dropValueList = AppCategories().categoriesDB;
   String dropdownValue = "";
   int _selectedIndex = 0;
 
+//Dropdown Type Setup
   List<String> dropTypeValueList = [];
   String dropdownTypeValue = "";
   int _selectedTypeIndex = 0;
 
   void _findStarterCategory() {
     setState(() {
-      _selectedIndex =
-          AppCategories().categoriesDBRaw.indexOf(widget.currentCategory);
+      _selectedIndex = AppCategories().categoriesDB.indexOf(widget
+          .passItem.category); //Find the index of the category in the list
       if (kDebugMode) {
         print("Starter Category index $_selectedIndex");
       }
@@ -40,19 +43,19 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
     });
   }
 
-  void _updateTypeList(dynamic passCategoryIndex) {
+  void _updateTypeList() {
     List<String> itemsType =
         AppItem().itemType[AppCategories().categoriesDBRaw[_selectedIndex]] ??
             [];
     // Do something with the items, for example, print them
     setState(() {
       dropTypeValueList = itemsType;
-      dropdownTypeValue = dropTypeValueList[_selectedTypeIndex];
+      dropdownTypeValue = widget.passItem.type;
     });
   }
 
-  //FIELDS setup
-  final _formKey = GlobalKey<FormState>();
+//FIELDS setup
+  final _formEditKey = GlobalKey<FormState>();
   final TextEditingController _brandNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
@@ -62,7 +65,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
   bool _isAutoadd = false;
 
   void _submitForm() {
-    if (_formKey.currentState!.validate()) {
+    if (_formEditKey.currentState!.validate()) {
       String brandName = _brandNameController.text;
       String description = _descriptionController.text;
       String iconUrl = AppMedia().otherIcon; //Temporary icon o default
@@ -86,29 +89,32 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
       // Print values (simulate saving to a database)
       if (kDebugMode) {
         print(
-            'New Item Added to the database: Brand = $brandName, Price = $price, Available = $isAutoadd');
+            'New Item Added to the database: Brand = $dropdownTypeValue, Price = $price, Available = $isAutoadd');
       }
       ItemManager itemManager = ItemManager();
-      itemManager.addCustomItem(brandName, description, iconUrl, imageUrl,
-          category, price, type, quantity, minQuantity, maxQuantity, isAutoadd);
-      // Clear the form fields after submission
-
-      // Clear inputs
-      _brandNameController.clear();
-      _descriptionController.clear();
-      _quantityController.clear();
-      _minQuantityController.clear();
-      _maxQuantityController.clear();
-      _isAutoadd = false; // Reset auto-add checkbox
-      _priceController.clear();
+      itemManager.editItem(
+          widget.passItem,
+          brandName,
+          description,
+          iconUrl,
+          imageUrl,
+          category,
+          price,
+          type,
+          quantity,
+          minQuantity,
+          maxQuantity,
+          isAutoadd);
+      //Disable the form fields after submission
+      _isEnabled = false;
       setState(() {
         _isAutoadd = false;
       });
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Item added: $brandName - \$${price.toStringAsFixed(2)}, Price: $price')),
+            content:
+                Text('Item edited successfully: $brandName, Price = $price')),
       );
     }
   }
@@ -117,9 +123,13 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
   void initState() {
     super.initState();
     _findStarterCategory();
+    // Initialize controllers with initial values directly
+    _brandNameController.text = widget.passItem.brandName;
+    _descriptionController.text = widget.passItem.description;
+    _priceController.text = widget.passItem.price.toString();
     // Update the list when the screen is initialized
     _updateList();
-    _updateTypeList(dropdownValue);
+    _updateTypeList();
     if (kDebugMode) {
       print("Updating  Shelves list");
     }
@@ -135,6 +145,14 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isEnabled = !_isEnabled; // Toggle the enabled state
+                    });
+                  },
+                  child: Text(_isEnabled ? "Disable Form" : "Enable Form"),
+                ),
                 //shelf selector
                 const SizedBox(height: 10),
                 Text(
@@ -184,7 +202,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                         _selectedIndex =
                             _selectedIndex = dropValueList.indexOf(value);
 
-                        _updateTypeList(dropdownValue);
+                        _updateTypeList(); // Update the type list based on the selected category
 
                         if (kDebugMode) {
                           print('Selected index $_selectedIndex');
@@ -277,11 +295,12 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                 Container(
                   width: 260,
                   child: Form(
-                    key: _formKey,
+                    key: _formEditKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         TextFormField(
+                          enabled: _isEnabled,
                           controller: _brandNameController,
                           decoration: InputDecoration(
                               labelText: 'Brand Name',
@@ -298,7 +317,9 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                           },
                         ),
                         TextFormField(
+                          enabled: _isEnabled,
                           controller: _descriptionController,
+                          maxLines: 3,
                           decoration: InputDecoration(
                               labelText: 'Description',
                               labelStyle: AppStyles().formTextStyle),
@@ -314,6 +335,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                           },
                         ),
                         TextFormField(
+                          enabled: _isEnabled,
                           controller: _quantityController,
                           decoration: InputDecoration(
                               labelText: 'Quantity',
@@ -328,6 +350,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                           },
                         ),
                         TextFormField(
+                          enabled: _isEnabled,
                           controller: _minQuantityController,
                           decoration: InputDecoration(
                               labelText: 'Min Quantity',
@@ -342,6 +365,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                           },
                         ),
                         TextFormField(
+                          enabled: _isEnabled,
                           controller: _maxQuantityController,
                           decoration: InputDecoration(
                               labelText: 'Max Quantity',
@@ -356,6 +380,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                           },
                         ),
                         TextFormField(
+                          enabled: _isEnabled,
                           controller: _priceController,
                           decoration: InputDecoration(
                               labelText: 'Price',
@@ -367,7 +392,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               setState(() {
-                                value = "0.00";
+                                value = widget.passItem.price;
                               });
                               return null;
                             }

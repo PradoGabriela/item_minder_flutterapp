@@ -28,8 +28,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Builder(
         builder: (context) {
-          return Scaffold(
-            body: const BottomNavBar(),
+          return const Scaffold(
+            body: BottomNavBar(),
           );
         },
       ),

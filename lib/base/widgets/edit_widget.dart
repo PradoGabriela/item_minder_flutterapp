@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
-import 'package:item_minder_flutterapp/base/widgets/shelves_selector.dart';
+import 'package:item_minder_flutterapp/base/widgets/edit_selector.dart';
 
-class AddWidget extends StatefulWidget {
-  final dynamic currentCategory;
-
-  const AddWidget({super.key, required this.currentCategory});
+class EditWidget extends StatefulWidget {
+  final dynamic passItem;
+  const EditWidget({super.key, required this.passItem});
 
   @override
-  State<AddWidget> createState() => _AddWidgetState();
+  State<EditWidget> createState() => _EditWidgetState();
 }
 
-class _AddWidgetState extends State<AddWidget> {
+class _EditWidgetState extends State<EditWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,7 +60,9 @@ class _AddWidgetState extends State<AddWidget> {
                         ),
                       ),
                       //First Menu
-                      ShelvesSelector(currentCategory: widget.currentCategory),
+                      EditSelector(
+                        passItem: widget.passItem,
+                      ),
                     ],
                   );
                 },
