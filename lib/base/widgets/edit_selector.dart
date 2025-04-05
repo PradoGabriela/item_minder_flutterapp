@@ -127,6 +127,11 @@ class _EditSelectorState extends State<EditSelector> {
     _brandNameController.text = widget.passItem.brandName;
     _descriptionController.text = widget.passItem.description;
     _priceController.text = widget.passItem.price.toString();
+    _quantityController.text = widget.passItem.quantity.toString();
+    _minQuantityController.text = widget.passItem.minQuantity.toString();
+    _maxQuantityController.text = widget.passItem.maxQuantity.toString();
+    _isAutoadd =
+        widget.passItem.isAutoAdd; // Set the initial value of the switch
     // Update the list when the screen is initialized
     _updateList();
     _updateTypeList();
@@ -146,12 +151,16 @@ class _EditSelectorState extends State<EditSelector> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
+                  style: AppStyles().buttonStyle,
                   onPressed: () {
                     setState(() {
                       _isEnabled = !_isEnabled; // Toggle the enabled state
                     });
                   },
-                  child: Text(_isEnabled ? "Disable Form" : "Enable Form"),
+                  child: Text(
+                    _isEnabled ? "Disable Edit" : "Enable Edit",
+                    style: AppStyles().buttonTexStyle,
+                  ),
                 ),
                 //shelf selector
                 const SizedBox(height: 10),
@@ -187,7 +196,7 @@ class _EditSelectorState extends State<EditSelector> {
                       return dropValueList.map<Widget>((String item) {
                         return Center(
                           child: Text(
-                            item,
+                            item.replaceFirst(item[0], item[0].toUpperCase()),
                             style: AppStyles().dropTextStyle,
                           ),
                         );
@@ -214,7 +223,8 @@ class _EditSelectorState extends State<EditSelector> {
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value.replaceFirst(
+                            value[0], value[0].toUpperCase())),
                       );
                     }).toList(),
                   ),
@@ -259,7 +269,7 @@ class _EditSelectorState extends State<EditSelector> {
                       return dropTypeValueList.map<Widget>((String item) {
                         return Center(
                           child: Text(
-                            item,
+                            item.replaceFirst(item[0], item[0].toUpperCase()),
                             style: AppStyles().dropTextStyle,
                           ),
                         );
@@ -284,7 +294,8 @@ class _EditSelectorState extends State<EditSelector> {
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value.replaceFirst(
+                            value[0], value[0].toUpperCase())),
                       );
                     }).toList(),
                   ),
@@ -319,7 +330,7 @@ class _EditSelectorState extends State<EditSelector> {
                         TextFormField(
                           enabled: _isEnabled,
                           controller: _descriptionController,
-                          maxLines: 3,
+                          maxLength: 28,
                           decoration: InputDecoration(
                               labelText: 'Description',
                               labelStyle: AppStyles().formTextStyle),
@@ -414,17 +425,10 @@ class _EditSelectorState extends State<EditSelector> {
                           onPressed: () {
                             _submitForm();
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppStyles().getPrimaryColor(),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(32),
-                            ),
-                          ),
-                          child: const Text(
+                          style: AppStyles().buttonStyle,
+                          child: Text(
                             'Add Item',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                            style: AppStyles().buttonTextStyle,
                           ),
                         ),
                       ],

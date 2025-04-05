@@ -39,6 +39,32 @@ class AppStyles {
     fontWeight: FontWeight.bold, // Example font weight
     color: Colors.black,
   );
+
+  final ButtonStyle _buttonStyle = ElevatedButton.styleFrom(
+    backgroundColor: _primaryColor,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(32),
+      side: const BorderSide(color: _primaryColor, width: 3),
+    ),
+  );
+
+  TextStyle buttonTexStyle = const TextStyle(
+    fontSize: 16.0,
+    fontWeight: FontWeight.bold, // Example font weight
+    color: Colors.white,
+  );
+
+  //Singleton instance
+  static final AppStyles _instance = AppStyles._internal();
+
+  //Private constructor
+  AppStyles._internal();
+
+  //Factory constructor to return the same instance
+  factory AppStyles() {
+    return _instance;
+  }
+
 //Getters
   Color getPrimaryColor() {
     return _primaryColor;
@@ -70,5 +96,13 @@ class AppStyles {
 
   Color getSecondaryColor() {
     return _secondaryColor;
+  }
+
+  ButtonStyle get buttonStyle {
+    return _buttonStyle;
+  }
+
+  TextStyle get buttonTextStyle {
+    return buttonTexStyle;
   }
 }

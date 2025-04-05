@@ -41,23 +41,36 @@ class ItemManager {
       int minQuantity,
       int maxQuantity,
       bool isAutoadd) async {
-    AppItem customItem = AppItem.custom(
-        brandName,
-        description,
-        iconUrl,
-        imageUrl,
-        category,
-        price,
-        type,
-        quantity,
-        minQuantity,
-        maxQuantity,
-        isAutoadd);
-    // Add a new AppItem to the list and box
-    BoxManager().itemBox.add(customItem);
-    if (kDebugMode) {
-      print(
-          "Custom item added: ${customItem.toString()}"); // Print the added item
+    // Create a new AppItem with custom values
+    // and add it to the list and box
+    if (brandName.isEmpty || brandName == null || brandName == "") {
+      {
+        brandName =
+            "No Brand Provided"; // Default brand name is an empty string
+      }
+      if (description.isEmpty || description == null || description == "") {
+        description =
+            "No Description Provided"; // Default description is an empty string
+      }
+
+      AppItem customItem = AppItem.custom(
+          brandName,
+          description,
+          iconUrl,
+          imageUrl,
+          category,
+          price,
+          type,
+          quantity,
+          minQuantity,
+          maxQuantity,
+          isAutoadd);
+      // Add a new AppItem to the list and box
+      BoxManager().itemBox.add(customItem);
+      if (kDebugMode) {
+        print(
+            "Custom item added: ${customItem.toString()}"); // Print the added item
+      }
     }
   }
 

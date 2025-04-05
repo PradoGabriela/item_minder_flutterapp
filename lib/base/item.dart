@@ -299,9 +299,11 @@ class AppItem extends HiveObject {
     ],
   };
   @HiveField(0)
-  String brandName = ""; // Default brand name is an empty string
+  String brandName =
+      "No Brand Provided"; // Default brand name is an empty string
   @HiveField(1)
-  String description = ""; // Default description is an empty string
+  String description =
+      "No Description Provided"; // Default description is an empty string
   @HiveField(2)
   String iconUrl = AppMedia().otherIcon; // Default icon URL is an generic icon
   @HiveField(3)
