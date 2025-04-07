@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:item_minder_flutterapp/base/item.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
@@ -119,6 +120,17 @@ class _EditSelectorState extends State<EditSelector> {
     }
   }
 
+  void _removeCurrentItem() {
+    ItemManager itemManager = ItemManager();
+    itemManager.removeItem(widget.passItem);
+    Navigator.pop(context, true);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(
+              'Item removed successfully: ${widget.passItem.brandName}, Price = ${widget.passItem.price}')),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -150,17 +162,52 @@ class _EditSelectorState extends State<EditSelector> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                  style: AppStyles().buttonStyle,
-                  onPressed: () {
-                    setState(() {
-                      _isEnabled = !_isEnabled; // Toggle the enabled state
-                    });
-                  },
-                  child: Text(
-                    _isEnabled ? "Disable Edit" : "Enable Edit",
-                    style: AppStyles().buttonTexStyle,
-                  ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: _removeCurrentItem,
+                      icon: const Icon(FontAwesomeIcons.trashCan),
+                      padding: const EdgeInsets.only(left: 40),
+                      color: AppStyles().getPrimaryColor(),
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(left: 190),
+                          width: 100,
+                          child: ElevatedButton(
+                            style: AppStyles().buttonStyle,
+                            onPressed: () {
+                              setState(() {
+                                _isEnabled =
+                                    !_isEnabled; // Toggle the enabled state
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Icon(
+                                  FontAwesomeIcons.penToSquare,
+                                  color: _isEnabled
+                                      ? Colors.black
+                                      : Colors
+                                          .white, // Change icon color based on state
+                                ),
+                                Text(
+                                  " Edit",
+                                  style: _isEnabled
+                                      ? AppStyles()
+                                          .buttonTextStyle
+                                          .copyWith(color: Colors.black)
+                                      : AppStyles().buttonTextStyle,
+                                  // Change text color based on state,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 //shelf selector
                 const SizedBox(height: 10),
@@ -253,6 +300,7 @@ class _EditSelectorState extends State<EditSelector> {
                         ? dropdownTypeValue
                         : dropTypeValueList.first, // Ensure value is valid
                     icon: const Icon(Icons.arrow_drop_down_circle_rounded),
+                    iconDisabledColor: Colors.white,
                     iconEnabledColor: Colors.white,
                     iconSize: 32,
                     elevation: 20,
@@ -427,10 +475,11 @@ class _EditSelectorState extends State<EditSelector> {
                           },
                           style: AppStyles().buttonStyle,
                           child: Text(
-                            'Add Item',
+                            'Save',
                             style: AppStyles().buttonTextStyle,
                           ),
                         ),
+                        const SizedBox(height: 10)
                       ],
                     ),
                   ),

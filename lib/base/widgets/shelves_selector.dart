@@ -83,14 +83,26 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
         return; // Exit the function if the condition is not met
       }
 
+      ItemManager itemManager = ItemManager();
+      itemManager.addCustomItem(
+        brandName: brandName,
+        description: description,
+        iconUrl: iconUrl,
+        imageUrl: imageUrl,
+        category: category,
+        price: price,
+        type: type,
+        quantity: quantity,
+        minQuantity: minQuantity,
+        maxQuantity: maxQuantity,
+        isAutoadd: isAutoadd,
+      );
+
       // Print values (simulate saving to a database)
       if (kDebugMode) {
         print(
             'New Item Added to the database: Brand = $brandName, Price = $price, Available = $isAutoadd');
       }
-      ItemManager itemManager = ItemManager();
-      itemManager.addCustomItem(brandName, description, iconUrl, imageUrl,
-          category, price, type, quantity, minQuantity, maxQuantity, isAutoadd);
       // Clear the form fields after submission
 
       // Clear inputs

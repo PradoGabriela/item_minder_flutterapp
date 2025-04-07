@@ -10,7 +10,7 @@ class EditItemScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Item'),
+        title: const Text('View/Edit Item'),
         backgroundColor: Colors.white,
         titleTextStyle: AppStyles().appBarTextStyle,
         centerTitle: true,

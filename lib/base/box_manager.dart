@@ -5,9 +5,9 @@ import 'package:item_minder_flutterapp/base/notification.dart';
 
 class BoxManager {
   Future<void> openBoxes() async {
-    var itemBox =
+    var _itemBox =
         await Hive.openBox<AppItem>('appItemBox'); // Open a box for AppItem
-    var notificationBox = await Hive.openBox<AppNotification>(
+    var _notificationBox = await Hive.openBox<AppNotification>(
         'appNotificationBox'); // Open a box for AppItem
   }
 

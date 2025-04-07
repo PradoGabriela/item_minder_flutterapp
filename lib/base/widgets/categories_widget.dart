@@ -43,6 +43,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   @override
   Widget build(BuildContext context) {
     //Swipe rigth and left widget
+
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         int currentIndex = _selectedIndex;
@@ -249,8 +250,6 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                         }
                       },
                     );
-
-                    //Text(snapshot.data![0].type.toString());
                   }
                 },
               ),

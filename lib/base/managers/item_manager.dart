@@ -29,48 +29,54 @@ class ItemManager {
     }
   }
 
-  void addCustomItem(
-      String brandName,
-      String description,
-      String iconUrl,
-      String imageUrl,
-      String category,
-      double price,
-      String type,
-      int quantity,
-      int minQuantity,
-      int maxQuantity,
-      bool isAutoadd) async {
-    // Create a new AppItem with custom values
-    // and add it to the list and box
-    if (brandName.isEmpty || brandName == null || brandName == "") {
-      {
-        brandName =
-            "No Brand Provided"; // Default brand name is an empty string
-      }
-      if (description.isEmpty || description == null || description == "") {
-        description =
-            "No Description Provided"; // Default description is an empty string
-      }
+  Future<void> addCustomItem({
+    String? brandName,
+    String? description,
+    required String iconUrl,
+    required String imageUrl,
+    required String category,
+    required double price,
+    required String type,
+    required int quantity,
+    required int minQuantity,
+    required int maxQuantity,
+    required bool isAutoadd,
+  }) async {
+    try {
+      // Set default values if null/empty
+      brandName =
+          brandName?.trim().isEmpty ?? true ? "No Brand Provided" : brandName!;
 
-      AppItem customItem = AppItem.custom(
-          brandName,
-          description,
-          iconUrl,
-          imageUrl,
-          category,
-          price,
-          type,
-          quantity,
-          minQuantity,
-          maxQuantity,
-          isAutoadd);
-      // Add a new AppItem to the list and box
-      BoxManager().itemBox.add(customItem);
+      description = description?.trim().isEmpty ?? true
+          ? "No Description Provided"
+          : description!;
+
+      final customItem = AppItem.custom(
+        brandName,
+        description,
+        iconUrl,
+        imageUrl,
+        category,
+        price,
+        type,
+        quantity,
+        minQuantity,
+        maxQuantity,
+        isAutoadd,
+      );
+
+      // Add to Hive box (assuming BoxManager().itemBox is a Hive Box)
+      await BoxManager().itemBox.add(customItem);
+
       if (kDebugMode) {
-        print(
-            "Custom item added: ${customItem.toString()}"); // Print the added item
+        print("Custom item added: ${customItem.toString()}");
+        print(BoxManager().itemBox.values.toList());
       }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to add item: $e");
+      }
+      rethrow; // Optional: Re-throw if you want calling code to handle errors
     }
   }
 
@@ -109,9 +115,21 @@ class ItemManager {
     BoxManager().itemBox.add(miscItem);
   }
 
-  void removeItem(AppItem item) {
-    //currentItems.remove(item);
+  void removeItem(AppItem item) async {
+    try {
+      await BoxManager()
+          .itemBox
+          .delete(item.key); // Delete the item from the Hive box
+      if (kDebugMode) {
+        print("Item removed: ${item.toString()}");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error removing item: $e");
+      }
+    }
   }
+
   List<AppItem> getAllAppItems(Box<AppItem> box) {
     return box.values.toList(); // Retrieve all AppItems
   }

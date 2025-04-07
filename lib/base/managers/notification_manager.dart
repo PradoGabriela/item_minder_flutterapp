@@ -57,7 +57,8 @@ class NotificationManager {
     _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
     const AndroidInitializationSettings androidInitializationSettings =
-        AndroidInitializationSettings('stack'); // Provide your app icon asset
+        AndroidInitializationSettings(
+            'logo_app'); // Provide your app icon asset
 
     const InitializationSettings initializationSettings =
         InitializationSettings(android: androidInitializationSettings);

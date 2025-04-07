@@ -1,3 +1,4 @@
+import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/screens/debugging_screen.dart';
@@ -12,10 +13,10 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
-    HomeScreen(),
+    const HomeScreen(),
     const Text('Shopping List'),
     const Text('Calendar'),
-    DebugScreen(),
+    const DebugScreen(),
   ];
 
   var _selectedIndex = 0;
@@ -42,19 +43,19 @@ class _BottomNavBarState extends State<BottomNavBar> {
         onTap: _onItemTapped,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(FluentSystemIcons.ic_fluent_home_filled),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list_alt_sharp),
+            icon: Icon(FluentSystemIcons.ic_fluent_notebook_filled),
             label: 'Shopping List',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
+            icon: Icon(FluentSystemIcons.ic_fluent_calendar_date_filled),
             label: 'Calendar',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: Icon(FluentSystemIcons.ic_fluent_person_filled),
             label: 'Profile',
           ),
         ],
