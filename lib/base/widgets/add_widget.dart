@@ -18,8 +18,6 @@ class _AddWidgetState extends State<AddWidget> {
     return Scaffold(
       backgroundColor: AppStyles().getSecondaryColor(),
       body: ListView(
-        //crossAxisAlignment: CrossAxisAlignment.center,
-        //mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             width: 380,

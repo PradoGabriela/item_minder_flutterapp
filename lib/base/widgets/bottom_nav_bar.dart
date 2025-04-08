@@ -1,6 +1,7 @@
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/screens/camera_test_screen.dart';
 import 'package:item_minder_flutterapp/screens/debugging_screen.dart';
 import 'package:item_minder_flutterapp/screens/home_screen.dart';
 
@@ -15,7 +16,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   final appScreens = [
     const HomeScreen(),
     const Text('Shopping List'),
-    const Text('Calendar'),
+    const UploadPage(),
     const DebugScreen(),
   ];
 

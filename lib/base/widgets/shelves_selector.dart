@@ -87,7 +87,7 @@ class _ShelvesSelectorState extends State<ShelvesSelector> {
       itemManager.addCustomItem(
         brandName: brandName,
         description: description,
-        iconUrl: iconUrl,
+        iconUrl: AppMedia().getItemIcon(type.toLowerCase()),
         imageUrl: imageUrl,
         category: category,
         price: price,

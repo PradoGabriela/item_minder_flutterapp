@@ -30,17 +30,7 @@ class AppItem extends HiveObject {
       "toilet cleaner disks",
       "air freshener",
     ],
-    Categories.livingRoom: [
-      "deodorizer",
-      "air freshener",
-      "tv",
-      "bulbs",
-      "lamp",
-      "bookshelf",
-      "rug",
-      "curtains",
-      "decorative items"
-    ],
+    Categories.livingRoom: ["deodorizer", "bulbs", "decorative items"],
     Categories.bedroom: ["tissue", "pillow", "blanket", "bed sheet"],
     Categories.kitchen: [
       "vinager",
@@ -307,7 +297,7 @@ class AppItem extends HiveObject {
   @HiveField(2)
   String iconUrl = AppMedia().otherIcon; // Default icon URL is an generic icon
   @HiveField(3)
-  String imageUrl = AppMedia().addImgIcon; //Default add image description
+  String imageUrl = ""; //Default add image description
   @HiveField(4)
   String category = (Categories.bathroom.toString())
       .replaceAll("Categories.", ""); // Default category is "other"

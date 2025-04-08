@@ -6,17 +6,20 @@ import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/base/widgets/upload_image_widget.dart';
 
 class EditSelector extends StatefulWidget {
   final dynamic passItem;
-  const EditSelector({super.key, required this.passItem});
+  final bool isEditMode;
+  const EditSelector(
+      {super.key, required this.passItem, this.isEditMode = false});
 
   @override
   State<EditSelector> createState() => _EditSelectorState();
 }
 
 class _EditSelectorState extends State<EditSelector> {
-  bool _isEnabled = false; //to enable or disable the edition
+  late bool _isEnabled; //to enable or disable the edition
 
 //Dropdown Setup
   List<String> dropValueList = AppCategories().categoriesDB;
@@ -94,24 +97,26 @@ class _EditSelectorState extends State<EditSelector> {
       }
       ItemManager itemManager = ItemManager();
       itemManager.editItem(
-          widget.passItem,
-          brandName,
-          description,
-          iconUrl,
-          imageUrl,
-          category,
-          price,
-          type,
-          quantity,
-          minQuantity,
-          maxQuantity,
-          isAutoadd);
+        widget.passItem,
+        brandName: brandName,
+        description: description,
+        iconUrl: AppMedia().getItemIcon(type.toLowerCase()),
+        imageUrl: imageUrl,
+        category: category,
+        price: price,
+        type: type,
+        quantity: quantity,
+        minQuantity: minQuantity,
+        maxQuantity: maxQuantity,
+        isAutoadd: isAutoadd,
+        item: widget.passItem,
+      );
       //Disable the form fields after submission
       _isEnabled = false;
       setState(() {
         _isAutoadd = false;
       });
-      Navigator.pop(context);
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content:
@@ -134,6 +139,7 @@ class _EditSelectorState extends State<EditSelector> {
   @override
   void initState() {
     super.initState();
+    _isEnabled = widget.isEditMode;
     _findStarterCategory();
     // Initialize controllers with initial values directly
     _brandNameController.text = widget.passItem.brandName;
@@ -209,7 +215,7 @@ class _EditSelectorState extends State<EditSelector> {
                     ),
                   ],
                 ),
-                //shelf selector
+                //SHELF SELECTOR
                 const SizedBox(height: 10),
                 Text(
                   "Shelf",
@@ -223,57 +229,62 @@ class _EditSelectorState extends State<EditSelector> {
                     color: AppStyles().getPrimaryColor(),
                     borderRadius: BorderRadius.circular(32),
                   ),
-                  child: DropdownButton<String>(
-                    value: dropValueList.contains(dropdownValue)
-                        ? dropdownValue
-                        : dropValueList.first, // Ensure value is valid
-                    icon: const Icon(Icons.arrow_drop_down_circle_rounded),
-                    iconEnabledColor: Colors.white,
-                    iconSize: 32,
-                    elevation: 20,
-                    underline: const SizedBox(),
-                    dropdownColor: AppStyles().getPrimaryColor(),
-                    menuMaxHeight: 400,
-                    borderRadius: BorderRadius.circular(20),
-                    alignment: const AlignmentDirectional(0, 40),
+                  child: AbsorbPointer(
+                    absorbing:
+                        !_isEnabled, // Disable interaction when not enabled
+                    child: DropdownButton<String>(
+                      value: dropValueList.contains(dropdownValue)
+                          ? dropdownValue
+                          : dropValueList.first, // Ensure value is valid
+                      icon: const Icon(Icons.arrow_drop_down_circle_rounded),
+                      iconEnabledColor: Colors.white,
+                      iconSize: 32,
+                      elevation: 20,
+                      underline: const SizedBox(),
+                      dropdownColor: AppStyles().getPrimaryColor(),
+                      menuMaxHeight: 400,
+                      borderRadius: BorderRadius.circular(20),
+                      alignment: const AlignmentDirectional(0, 40),
 
-                    style: AppStyles().dropTextStyle,
-                    isExpanded: true, // This makes the dropdown take full width
-                    selectedItemBuilder: (BuildContext context) {
-                      return dropValueList.map<Widget>((String item) {
-                        return Center(
-                          child: Text(
-                            item.replaceFirst(item[0], item[0].toUpperCase()),
-                            style: AppStyles().dropTextStyle,
-                          ),
+                      style: AppStyles().dropTextStyle,
+                      isExpanded:
+                          true, // This makes the dropdown take full width
+                      selectedItemBuilder: (BuildContext context) {
+                        return dropValueList.map<Widget>((String item) {
+                          return Center(
+                            child: Text(
+                              item.replaceFirst(item[0], item[0].toUpperCase()),
+                              style: AppStyles().dropTextStyle,
+                            ),
+                          );
+                        }).toList();
+                      },
+
+                      onChanged: (String? value) {
+                        // This is called when the user selects an item.
+                        setState(() {
+                          dropdownValue = value!;
+
+                          _selectedIndex =
+                              _selectedIndex = dropValueList.indexOf(value);
+
+                          _updateTypeList(); // Update the type list based on the selected category
+
+                          if (kDebugMode) {
+                            print('Selected index $_selectedIndex');
+                            print('DropVAlue $dropdownValue');
+                          }
+                        });
+                      },
+                      items: dropValueList
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value.replaceFirst(
+                              value[0], value[0].toUpperCase())),
                         );
-                      }).toList();
-                    },
-
-                    onChanged: (String? value) {
-                      // This is called when the user selects an item.
-                      setState(() {
-                        dropdownValue = value!;
-
-                        _selectedIndex =
-                            _selectedIndex = dropValueList.indexOf(value);
-
-                        _updateTypeList(); // Update the type list based on the selected category
-
-                        if (kDebugMode) {
-                          print('Selected index $_selectedIndex');
-                          print('DropVAlue $dropdownValue');
-                        }
-                      });
-                    },
-                    items: dropValueList
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value.replaceFirst(
-                            value[0], value[0].toUpperCase())),
-                      );
-                    }).toList(),
+                      }).toList(),
+                    ),
                   ),
                 ),
               ],
@@ -295,59 +306,69 @@ class _EditSelectorState extends State<EditSelector> {
                     color: AppStyles().getPrimaryColor(),
                     borderRadius: BorderRadius.circular(32),
                   ),
-                  child: DropdownButton<String>(
-                    value: dropTypeValueList.contains(dropdownTypeValue)
-                        ? dropdownTypeValue
-                        : dropTypeValueList.first, // Ensure value is valid
-                    icon: const Icon(Icons.arrow_drop_down_circle_rounded),
-                    iconDisabledColor: Colors.white,
-                    iconEnabledColor: Colors.white,
-                    iconSize: 32,
-                    elevation: 20,
-                    dropdownColor: AppStyles().getPrimaryColor(),
-                    underline: const SizedBox(),
+                  child: AbsorbPointer(
+                    absorbing:
+                        !_isEnabled, // Disable interaction when not enabled
+                    child: DropdownButton<String>(
+                      value: dropTypeValueList.contains(dropdownTypeValue)
+                          ? dropdownTypeValue
+                          : dropTypeValueList.first, // Ensure value is valid
+                      icon: const Icon(Icons.arrow_drop_down_circle_rounded),
+                      iconDisabledColor: Colors.white,
+                      iconEnabledColor: Colors.white,
+                      iconSize: 32,
+                      elevation: 20,
+                      dropdownColor: AppStyles().getPrimaryColor(),
+                      underline: const SizedBox(),
 
-                    menuMaxHeight: 400,
-                    borderRadius: BorderRadius.circular(20),
-                    alignment: const AlignmentDirectional(0, 40),
+                      menuMaxHeight: 400,
+                      borderRadius: BorderRadius.circular(20),
+                      alignment: const AlignmentDirectional(0, 40),
 
-                    style: AppStyles().dropTextStyle,
-                    isExpanded: true, // This makes the dropdown take full width
-                    selectedItemBuilder: (BuildContext context) {
-                      return dropTypeValueList.map<Widget>((String item) {
-                        return Center(
-                          child: Text(
-                            item.replaceFirst(item[0], item[0].toUpperCase()),
-                            style: AppStyles().dropTextStyle,
-                          ),
+                      style: AppStyles().dropTextStyle,
+                      isExpanded:
+                          true, // This makes the dropdown take full width
+                      selectedItemBuilder: (BuildContext context) {
+                        return dropTypeValueList.map<Widget>((String item) {
+                          return Center(
+                            child: Text(
+                              item.replaceFirst(item[0], item[0].toUpperCase()),
+                              style: AppStyles().dropTextStyle,
+                            ),
+                          );
+                        }).toList();
+                      },
+
+                      onChanged: (String? value) {
+                        // This is called when the user selects an item.
+                        setState(() {
+                          dropdownTypeValue = value!;
+
+                          _selectedTypeIndex = _selectedTypeIndex =
+                              dropTypeValueList.indexOf(value);
+
+                          if (kDebugMode) {
+                            print('Selected index type $_selectedTypeIndex');
+                            print('DropVAlue type $dropdownTypeValue');
+                          }
+                        });
+                      },
+                      items: dropTypeValueList
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value.replaceFirst(
+                              value[0], value[0].toUpperCase())),
                         );
-                      }).toList();
-                    },
-
-                    onChanged: (String? value) {
-                      // This is called when the user selects an item.
-                      setState(() {
-                        dropdownTypeValue = value!;
-
-                        _selectedTypeIndex = _selectedTypeIndex =
-                            dropTypeValueList.indexOf(value);
-
-                        if (kDebugMode) {
-                          print('Selected index type $_selectedTypeIndex');
-                          print('DropVAlue type $dropdownTypeValue');
-                        }
-                      });
-                    },
-                    items: dropTypeValueList
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value.replaceFirst(
-                            value[0], value[0].toUpperCase())),
-                      );
-                    }).toList(),
+                      }).toList(),
+                    ),
                   ),
                 ),
+
+                //Item Image
+                const SizedBox(height: 10),
+                UploadImageWidget(
+                    passItem: widget.passItem, isEditMode: _isEnabled),
 
                 ///Form to add item
                 const SizedBox(height: 10),
@@ -458,25 +479,32 @@ class _EditSelectorState extends State<EditSelector> {
                             return null;
                           },
                         ),
-                        SwitchListTile(
-                          title: Text("AutoAdd to List?",
-                              style: AppStyles().formTextStyle),
-                          value: _isAutoadd,
-                          onChanged: (bool newValue) {
-                            setState(() {
-                              _isAutoadd = newValue;
-                            });
-                          },
+                        AbsorbPointer(
+                          absorbing:
+                              !_isEnabled, // Disable interaction when not enabled
+                          child: SwitchListTile(
+                            title: Text("AutoAdd to List?",
+                                style: AppStyles().formTextStyle),
+                            value: _isAutoadd,
+                            onChanged: (bool newValue) {
+                              setState(() {
+                                _isAutoadd = newValue;
+                              });
+                            },
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            _submitForm();
-                          },
-                          style: AppStyles().buttonStyle,
-                          child: Text(
-                            'Save',
-                            style: AppStyles().buttonTextStyle,
+                        Visibility(
+                          visible: _isEnabled,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _submitForm();
+                            },
+                            style: AppStyles().buttonStyle,
+                            child: Text(
+                              'Save',
+                              style: AppStyles().buttonTextStyle,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10)

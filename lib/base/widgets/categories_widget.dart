@@ -145,6 +145,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
               //Scrollable list of items on vertical
 
               child: FutureBuilder<List<dynamic>>(
+                // Use the FutureBuilder to handle asynchronous data fetching
                 future: getFilteredItems(AppCategories().categoriesDB[
                     _selectedIndex]), // Provide your asynchronous method here
                 builder: (BuildContext context,
@@ -193,6 +194,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                     // Display the first item's string representation
                     return GridView.builder(
                       scrollDirection: Axis.vertical,
+                      padding: EdgeInsets.only(bottom: 80),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisSpacing: 10,
@@ -237,14 +239,14 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                                   color: AppStyles()
                                       .getPrimaryColor(), // Customize the text color
                                 ),
-                              )
+                              ),
                             ],
                           );
                         } else {
                           return ItemCard(
                             itemType: snapshot.data![index].type.toString(),
                             itemQuantity: snapshot.data![index].quantity,
-                            itemImgURL: snapshot.data![index].imageUrl,
+                            itemIconUrl: snapshot.data![index].iconUrl,
                             myItem: snapshot.data![index],
                           );
                         }

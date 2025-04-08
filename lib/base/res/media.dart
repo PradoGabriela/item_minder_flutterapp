@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class AppMedia {
   static const String _basePath = 'assets/images';
   static const String _iconsBasePath = 'assets/icons';
@@ -17,4 +19,9 @@ class AppMedia {
   String get logoTop => _logoTop;
   String get otherIcon => _otherIcon;
   String get addImgIcon => _addImgIcon;
+
+  String getItemIcon(String itemType) {
+    debugPrint('$_basePath/$itemType.png');
+    return '$_basePath/$itemType.png';
+  }
 }

@@ -80,34 +80,47 @@ class ItemManager {
     }
   }
 
-  void editItem(
-      AppItem item,
-      String brandName,
-      String description,
-      String iconUrl,
-      String imageUrl,
-      String category,
-      double price,
-      String type,
-      int quantity,
-      int minQuantity,
-      int maxQuantity,
-      bool isAutoadd) async {
-    // Edit an existing AppItem in the list and box
-    item.brandName = brandName;
-    item.description = description;
-    item.iconUrl = iconUrl;
-    item.imageUrl = imageUrl;
-    item.category = category;
-    item.price = price;
-    item.type = type;
-    item.quantity = quantity;
-    item.minQuantity = minQuantity;
-    item.maxQuantity = maxQuantity;
-    item.isAutoAdd = isAutoadd;
+  Future<void> editItem(
+    passItem, {
+    required AppItem item,
+    String? brandName,
+    String? description,
+    String? iconUrl,
+    String? imageUrl,
+    String? category,
+    double? price,
+    String? type,
+    int? quantity,
+    int? minQuantity,
+    int? maxQuantity,
+    bool? isAutoadd,
+  }) async {
+    try {
+      // Update only non-null fields (partial updates allowed)
+      if (brandName != null) item.brandName = brandName;
+      if (description != null) item.description = description;
+      if (iconUrl != null) item.iconUrl = iconUrl;
+      if (imageUrl != null) item.imageUrl = imageUrl;
+      if (category != null) item.category = category;
+      if (price != null) item.price = price;
+      if (type != null) item.type = type;
+      if (quantity != null) item.quantity = quantity;
+      if (minQuantity != null) item.minQuantity = minQuantity;
+      if (maxQuantity != null) item.maxQuantity = maxQuantity;
+      if (isAutoadd != null) item.isAutoAdd = isAutoadd;
 
-    // Save the changes to the Hive box
-    await BoxManager().itemBox.put(item.key, item);
+      // Save changes (assuming Hive or similar key-value store)
+      await BoxManager().itemBox.put(item.key, item);
+
+      if (kDebugMode) {
+        print("Item updated: ${item.toString()}");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to update item: $e");
+      }
+      rethrow; // Let the caller handle the error if needed
+    }
   }
 
   void addMiscItem() async {
@@ -115,18 +128,26 @@ class ItemManager {
     BoxManager().itemBox.add(miscItem);
   }
 
-  void removeItem(AppItem item) async {
+  Future<bool> removeItem(AppItem item) async {
     try {
-      await BoxManager()
-          .itemBox
-          .delete(item.key); // Delete the item from the Hive box
+      if (item.key == null) {
+        if (kDebugMode) {
+          print("Cannot remove item: Key is null");
+        }
+        return false;
+      }
+
+      await BoxManager().itemBox.delete(item.key!);
+
       if (kDebugMode) {
         print("Item removed: ${item.toString()}");
       }
+      return true; // Success
     } catch (e) {
       if (kDebugMode) {
-        print("Error removing item: $e");
+        print("Error removing item '${item.brandName}': $e");
       }
+      return false; // Failure
     }
   }
 

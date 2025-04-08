@@ -7,13 +7,13 @@ import 'package:item_minder_flutterapp/screens/edit_item_screen.dart';
 class ItemCard extends StatefulWidget {
   final String itemType;
   final int itemQuantity;
-  final String itemImgURL;
+  final String itemIconUrl;
   final dynamic myItem;
 
   ItemCard({
     required this.itemType,
     required this.itemQuantity,
-    required this.itemImgURL,
+    required this.itemIconUrl,
     required this.myItem,
   });
 
@@ -22,8 +22,6 @@ class ItemCard extends StatefulWidget {
 }
 
 class _ItemCardState extends State<ItemCard> {
-  bool _isHolding = false;
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -56,18 +54,6 @@ class _ItemCardState extends State<ItemCard> {
               ),
             ).then((_) {
               setState(() {});
-            });
-
-            setState(() {
-              _isHolding = true;
-            });
-            if (kDebugMode) {
-              print('holding');
-            }
-          },
-          onTapCancel: () {
-            setState(() {
-              _isHolding = false;
             });
           },
           splashColor:
@@ -104,7 +90,7 @@ class _ItemCardState extends State<ItemCard> {
                                     color: AppStyles().getPrimaryColor(),
                                     width: 3)),
                             image: DecorationImage(
-                              image: AssetImage(widget.itemImgURL),
+                              image: AssetImage(widget.itemIconUrl),
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -118,16 +104,6 @@ class _ItemCardState extends State<ItemCard> {
                   },
                 ),
               ),
-              if (_isHolding)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppStyles()
-                          .getSecondaryColor(), // Tint color with opacity
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
