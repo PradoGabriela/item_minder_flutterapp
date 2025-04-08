@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/notification.dart';
+import 'package:item_minder_flutterapp/base/shopping.dart';
 import 'package:item_minder_flutterapp/base/widgets/bottom_nav_bar.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:item_minder_flutterapp/base/box_manager.dart';
@@ -10,11 +12,13 @@ Future<void> main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(AppItemAdapter());
   Hive.registerAdapter(AppNotificationAdapter());
+  Hive.registerAdapter(AppShoppingAdapter());
 
   NotificationManager().initializeNotifications();
   NotificationManager().checkNotificationPermission();
 
   await BoxManager().openBoxes();
+  ShoppingManager().initShoppingList(); // Initialize the shopping list
   // Retrieve all AppItems from the box
   runApp(const MyApp());
 }

@@ -124,4 +124,31 @@ class NotificationManager {
       }
     }
   }
+
+  /// Function to get all notifications from the database
+  /// Returns a list of AppNotification objects
+  List<AppNotification> getNotifications() {
+    return BoxManager().notificationBox.values.toList();
+  }
+
+  //Functionto delete all notifications from the database
+  Future<void> deleteAllNotifications() async {
+    await BoxManager().notificationBox.clear();
+    if (kDebugMode) {
+      print("All notifications deleted.");
+    }
+  }
+
+  Future<void> deleteNotification(AppNotification notification) async {
+    try {
+      await BoxManager().notificationBox.delete(notification.key);
+      if (kDebugMode) {
+        print("Notification $notification deleted.");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error deleting notification: $e");
+      }
+    }
+  }
 }

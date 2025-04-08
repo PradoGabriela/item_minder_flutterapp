@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
-import 'package:item_minder_flutterapp/base/item.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
 import 'package:item_minder_flutterapp/screens/add_item_screen.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 
 class AppBottomButtons extends StatefulWidget {
@@ -22,7 +23,10 @@ class _AppBottomButtonsState extends State<AppBottomButtons> {
       if (item.quantity == item.minQuantity) {
         NotificationManager()
             .newMinNotification(item.type.toString()); //Push notification
-
+        if (item.isAutoAdd) {
+          //Add to shopping list
+          ShoppingManager().addShoppingItem(item: item); //Add to shopping list
+        }
         //If is autoadd add to shopping list
         if (kDebugMode) {
           print('Min quantity( ${item.minQuantity} ) reached ');
