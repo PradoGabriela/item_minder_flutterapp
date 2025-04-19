@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
-import 'package:item_minder_flutterapp/base/widgets/shelves_selector.dart';
+import 'package:item_minder_flutterapp/base/widgets/add_item_selector.dart';
 
 class AddWidget extends StatefulWidget {
   final dynamic currentCategory;
@@ -59,7 +59,7 @@ class _AddWidgetState extends State<AddWidget> {
                         ),
                       ),
                       //First Menu
-                      ShelvesSelector(currentCategory: widget.currentCategory),
+                      AddItemSelector(currentCategory: widget.currentCategory),
                     ],
                   );
                 },

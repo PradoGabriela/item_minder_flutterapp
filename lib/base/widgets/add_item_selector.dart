@@ -6,15 +6,15 @@ import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 
-class ShelvesSelector extends StatefulWidget {
+class AddItemSelector extends StatefulWidget {
   final dynamic currentCategory;
 
-  const ShelvesSelector({super.key, required this.currentCategory});
+  const AddItemSelector({super.key, required this.currentCategory});
   @override
-  State<ShelvesSelector> createState() => _ShelvesSelectorState();
+  State<AddItemSelector> createState() => _AddItemSelectorState();
 }
 
-class _ShelvesSelectorState extends State<ShelvesSelector> {
+class _AddItemSelectorState extends State<AddItemSelector> {
 //Dropdown Setup
   List<String> dropValueList = AppCategories().categoriesDB;
   String dropdownValue = "";

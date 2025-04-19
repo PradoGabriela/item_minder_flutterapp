@@ -1,0 +1,2 @@
+C:/Users/coeco/Desktop/item_minder_flutterapp/android/app/.cxx/Debug/221s5o5w/x86/CMakeFiles/edit_cache.dir
+C:/Users/coeco/Desktop/item_minder_flutterapp/android/app/.cxx/Debug/221s5o5w/x86/CMakeFiles/rebuild_cache.dir

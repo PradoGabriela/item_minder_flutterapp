@@ -2,11 +2,9 @@ import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/screens/calendar_screen.dart';
-import 'package:item_minder_flutterapp/screens/camera_test_screen.dart';
 import 'package:item_minder_flutterapp/screens/profile_screen.dart';
 import 'package:item_minder_flutterapp/screens/home_screen.dart';
 import 'package:item_minder_flutterapp/screens/shopping_list_screen.dart';
-import 'package:item_minder_flutterapp/base/widgets/shopping_widget.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});

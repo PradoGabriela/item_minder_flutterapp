@@ -345,5 +345,42 @@ class AppItem extends HiveObject {
       this.quantity,
       this.minQuantity,
       this.maxQuantity,
-      this.isAutoAdd); // Custom constructor for AppItem class with date
+      this.isAutoAdd);
+
+  static fromJson(jsonData) {
+    // Convert JSON data to AppItem object
+    return AppItem.custom(
+      jsonData['brandName'] ?? "No Brand Provided",
+      jsonData['description'] ?? "No Description Provided",
+      jsonData['iconUrl'] ?? AppMedia().otherIcon,
+      jsonData['imageUrl'] ?? "",
+      jsonData['category'] ?? Categories.bathroom.toString(),
+      (jsonData['price'] ?? 0.0).toDouble(),
+      jsonData['type'] ?? "miscellaneous item",
+      (jsonData['quantity'] ?? 3).toInt(),
+      (jsonData['minQuantity'] ?? 1).toInt(),
+      (jsonData['maxQuantity'] ?? 4).toInt(),
+      (jsonData['isAutoAdd'] ?? false) as bool,
+    );
+  }
+
+  Object? toJson() {
+    // Convert AppItem object to JSON data
+    return {
+      'brandName': brandName,
+      'description': description,
+      'iconUrl': iconUrl,
+      'imageUrl': imageUrl,
+      'category': category,
+      'price': price,
+      'type': type,
+      'quantity': quantity,
+      'minQuantity': minQuantity,
+      'maxQuantity': maxQuantity,
+      'isAutoAdd': isAutoAdd,
+      'addedDateString': addedDateString,
+    };
+  }
+
+  // Custom constructor for AppItem class with date
 }
