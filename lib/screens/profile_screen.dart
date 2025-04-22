@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:item_minder_flutterapp/base/box_manager.dart';
-import 'package:item_minder_flutterapp/base/item.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/image_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';

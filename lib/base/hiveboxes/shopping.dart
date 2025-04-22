@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:item_minder_flutterapp/base/item.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 part 'shopping.g.dart';
 
 @HiveType(typeId: 2) // Define a unique typeId for this class

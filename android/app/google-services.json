@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "409393105099",
-    "firebase_url": "https://item-minder-default-rtdb.europe-west1.firebasedatabase.app",
-    "project_id": "item-minder",
-    "storage_bucket": "item-minder.firebasestorage.app"
+    "project_number": "789004817852",
+    "firebase_url": "https://itemminder-default-rtdb.firebaseio.com",
+    "project_id": "itemminder",
+    "storage_bucket": "itemminder.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:409393105099:android:97f8819c082cbfb98db34e",
+        "mobilesdk_app_id": "1:789004817852:android:eb459c2524a3a905e147b9",
         "android_client_info": {
           "package_name": "com.example.item_minder_flutterapp"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCGWPCMpP1tW7qsn4_TU7k4w_-UEGRrP_E"
+          "current_key": "AIzaSyCAzs82DQBwL6Aj2Zm_VJGAG3IXuWTw_c8"
         }
       ],
       "services": {

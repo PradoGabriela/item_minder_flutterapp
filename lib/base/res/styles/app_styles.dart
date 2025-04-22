@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class AppStyles {
   //UI Palette variables
   static const Color _primaryColor = Color(0xFFFF914D);
-  static const Color _secondaryColor =
-      Color.from(alpha: 0.5, red: 1, green: 0.569, blue: 0);
+  static final Color _secondaryColor = Color.fromRGBO(255, 145, 77, 0.5);
   static const TextStyle _titleStyle = TextStyle(
     fontWeight: FontWeight.bold, // Example font weight
     fontSize: 12.0,

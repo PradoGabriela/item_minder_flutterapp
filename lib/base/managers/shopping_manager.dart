@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:item_minder_flutterapp/base/box_manager.dart';
-import 'package:item_minder_flutterapp/base/item.dart';
-import 'package:item_minder_flutterapp/base/shopping.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/shopping.dart';
 
 class ShoppingManager {
   // Singleton instance

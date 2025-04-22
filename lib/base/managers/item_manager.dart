@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
-import 'package:item_minder_flutterapp/base/box_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
-import 'package:item_minder_flutterapp/base/item.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
+import 'package:item_minder_flutterapp/base/managers/firebase_item_manager.dart';
+import 'package:item_minder_flutterapp/device_id.dart';
 
 class ItemManager {
   static final ItemManager _instance = ItemManager._internal();
@@ -63,10 +65,12 @@ class ItemManager {
         minQuantity,
         maxQuantity,
         isAutoadd,
+        DeviceId().getDeviceId(), // Set last updated by to device ID
       );
 
       // Add to Hive box (assuming BoxManager().itemBox is a Hive Box)
       await BoxManager().itemBox.add(customItem);
+      FirebaseItemManager().addItemToFirebase(customItem); // Add to Firebase
 
       if (kDebugMode) {
         print("Custom item added: ${customItem.toString()}");
@@ -108,9 +112,13 @@ class ItemManager {
       if (minQuantity != null) item.minQuantity = minQuantity;
       if (maxQuantity != null) item.maxQuantity = maxQuantity;
       if (isAutoadd != null) item.isAutoAdd = isAutoadd;
+      item.lastUpdatedBy =
+          DeviceId().getDeviceId(); // Update last updated by field
 
       // Save changes (assuming Hive or similar key-value store)
       await BoxManager().itemBox.put(item.key, item);
+      FirebaseItemManager()
+          .updateItemInFirebase(item, item.key); // Update in Firebase
 
       if (kDebugMode) {
         print("Item updated: ${item.toString()}");
@@ -121,6 +129,25 @@ class ItemManager {
       }
       rethrow; // Let the caller handle the error if needed
     }
+  }
+
+  Future<void> editItemFromFirebase(int id, AppItem fireItem) async {
+    AppItem itemToEdit = BoxManager().itemBox.get(id)!;
+    itemToEdit.brandName = fireItem.brandName;
+    itemToEdit.description = fireItem.description;
+    itemToEdit.iconUrl = fireItem.iconUrl;
+    itemToEdit.imageUrl = fireItem.imageUrl;
+    itemToEdit.category = fireItem.category;
+    itemToEdit.price = fireItem.price;
+    itemToEdit.type = fireItem.type;
+    itemToEdit.quantity = fireItem.quantity;
+    itemToEdit.minQuantity = fireItem.minQuantity;
+    itemToEdit.maxQuantity = fireItem.maxQuantity;
+    itemToEdit.isAutoAdd = fireItem.isAutoAdd;
+    itemToEdit.addedDateString = fireItem.addedDateString;
+    itemToEdit.lastUpdated = DateTime.now(); // Update last updated date
+    itemToEdit.lastUpdatedBy = fireItem.lastUpdatedBy;
+    itemToEdit.save();
   }
 
   void addMiscItem() async {
@@ -136,8 +163,10 @@ class ItemManager {
         }
         return false;
       }
-
+      String tempKey = item.key.toString();
       await BoxManager().itemBox.delete(item.key!);
+      await FirebaseItemManager()
+          .deleteItemFromFirebase(tempKey!); // Remove from Firebase
 
       if (kDebugMode) {
         print("Item removed: ${item.toString()}");

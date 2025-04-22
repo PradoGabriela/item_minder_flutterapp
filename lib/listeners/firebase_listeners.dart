@@ -1,0 +1,62 @@
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
+import 'package:item_minder_flutterapp/device_id.dart';
+
+class FirebaseListeners {
+  /// This method sets up Firebase listeners to listen for changes in the Firebase database.
+  /// It listens for changes in the 'items' node and updates the local Hive box with the new data.
+  ///
+  /// Future<void> setupFirebaseListeners() async {
+
+  Future<void> setupFirebaseListeners() async {
+    final currentDeviceId =
+        await DeviceId().getDeviceId(); // Don't forget await!
+
+    final itemsRef = FirebaseDatabase.instance.ref('items');
+
+    // Listen for NEW items
+    itemsRef.onChildAdded.listen((event) async {
+      try {
+        final itemData = Map<String, dynamic>.from(event.snapshot.value as Map);
+        if (itemData['lastUpdatedBy']?.toString() != currentDeviceId) {
+          final item = AppItem.fromJson(itemData);
+          BoxManager().itemBox.add(item); // Use Firebase push ID as key
+          debugPrint('🆕 New item added: ${event.snapshot.key}');
+        }
+      } catch (e) {
+        debugPrint('❌ child_added error: $e');
+      }
+    });
+
+    // Listen for UPDATED items
+    itemsRef.onChildChanged.listen((event) async {
+      try {
+        final itemData = Map<String, dynamic>.from(event.snapshot.value as Map);
+        if (itemData['lastUpdatedBy']?.toString() != currentDeviceId) {
+          final item = AppItem.fromJson(itemData);
+
+          ItemManager()
+              .editItemFromFirebase(int.parse(event.snapshot.key!), item);
+          debugPrint('🔄 Item updated: ${event.snapshot.key}');
+        }
+      } catch (e) {
+        debugPrint('❌ child_changed error: $e');
+      }
+    });
+    //Listen for DELETED items
+    itemsRef.onChildRemoved.listen((event) async {
+      try {
+        final itemKey = event.snapshot.key;
+        if (itemKey != null) {
+          await BoxManager().itemBox.delete(int.parse(itemKey));
+          debugPrint('🗑️ Item deleted: $itemKey');
+        }
+      } catch (e) {
+        debugPrint('❌ child_removed error: $e');
+      }
+    });
+  }
+}

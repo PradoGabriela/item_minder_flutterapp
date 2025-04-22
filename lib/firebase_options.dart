@@ -46,7 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '409393105099',
     projectId: 'item-minder',
     authDomain: 'item-minder.firebaseapp.com',
-    databaseURL: 'https://item-minder-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: "https://itemminder-default-rtdb.firebaseio.com",
     storageBucket: 'item-minder.firebasestorage.app',
     measurementId: 'G-ZFWC3L8E88',
   );
@@ -56,7 +56,7 @@ class DefaultFirebaseOptions {
     appId: '1:409393105099:android:97f8819c082cbfb98db34e',
     messagingSenderId: '409393105099',
     projectId: 'item-minder',
-    databaseURL: 'https://item-minder-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: "https://itemminder-default-rtdb.firebaseio.com",
     storageBucket: 'item-minder.firebasestorage.app',
   );
 
@@ -65,7 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:409393105099:ios:b15c7a92ae3065ee8db34e',
     messagingSenderId: '409393105099',
     projectId: 'item-minder',
-    databaseURL: 'https://item-minder-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: "https://itemminder-default-rtdb.firebaseio.com",
     storageBucket: 'item-minder.firebasestorage.app',
     iosBundleId: 'com.example.itemMinderFlutterapp',
   );
@@ -75,7 +75,7 @@ class DefaultFirebaseOptions {
     appId: '1:409393105099:ios:b15c7a92ae3065ee8db34e',
     messagingSenderId: '409393105099',
     projectId: 'item-minder',
-    databaseURL: 'https://item-minder-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: "https://itemminder-default-rtdb.firebaseio.com",
     storageBucket: 'item-minder.firebasestorage.app',
     iosBundleId: 'com.example.itemMinderFlutterapp',
   );
@@ -86,7 +86,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '409393105099',
     projectId: 'item-minder',
     authDomain: 'item-minder.firebaseapp.com',
-    databaseURL: 'https://item-minder-default-rtdb.europe-west1.firebasedatabase.app',
+    databaseURL: "https://itemminder-default-rtdb.firebaseio.com",
     storageBucket: 'item-minder.firebasestorage.app',
     measurementId: 'G-R1WSC4LP0T',
   );

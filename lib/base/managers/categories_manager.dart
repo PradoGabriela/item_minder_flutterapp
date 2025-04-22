@@ -1,6 +1,5 @@
-import 'package:item_minder_flutterapp/base/box_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
-import 'package:item_minder_flutterapp/base/item.dart';
 
 class AppCategories {
   final List<Categories> _categoriesDB = Categories.values.toList();

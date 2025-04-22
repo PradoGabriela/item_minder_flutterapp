@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
+import 'package:item_minder_flutterapp/device_id.dart';
 
 part 'item.g.dart'; // This part directive allows for the code generation
 
@@ -316,10 +317,10 @@ class AppItem extends HiveObject {
   @HiveField(11)
   String addedDateString =
       DateTime.now().toString(); // Default added date string is now
-
-  /*  String get itemTypeName => itemType[category]!
-      .firstWhere((type) => type == description, orElse: () => "Unknown");
- */
+  @HiveField(12)
+  DateTime lastUpdated = DateTime.now(); // Default last updated date is now
+  @HiveField(13)
+  String lastUpdatedBy = ""; // Default last updated by is the device ID
 
   AppItem(); // Constructor for AppItem class
   AppItem.custom(
@@ -333,7 +334,8 @@ class AppItem extends HiveObject {
       this.quantity,
       this.minQuantity,
       this.maxQuantity,
-      this.isAutoAdd); // Custom constructor for AppItem class
+      this.isAutoAdd,
+      this.lastUpdatedBy); // Custom constructor for AppItem class
   AppItem.customWithDate(
       this.brandName,
       this.description,
@@ -345,6 +347,7 @@ class AppItem extends HiveObject {
       this.quantity,
       this.minQuantity,
       this.maxQuantity,
+      this.lastUpdatedBy,
       this.isAutoAdd);
 
   static fromJson(jsonData) {
@@ -361,25 +364,8 @@ class AppItem extends HiveObject {
       (jsonData['minQuantity'] ?? 1).toInt(),
       (jsonData['maxQuantity'] ?? 4).toInt(),
       (jsonData['isAutoAdd'] ?? false) as bool,
+      jsonData['lastUpdatedBy'] ?? DeviceId().getDeviceId(),
     );
-  }
-
-  Object? toJson() {
-    // Convert AppItem object to JSON data
-    return {
-      'brandName': brandName,
-      'description': description,
-      'iconUrl': iconUrl,
-      'imageUrl': imageUrl,
-      'category': category,
-      'price': price,
-      'type': type,
-      'quantity': quantity,
-      'minQuantity': minQuantity,
-      'maxQuantity': maxQuantity,
-      'isAutoAdd': isAutoAdd,
-      'addedDateString': addedDateString,
-    };
   }
 
   // Custom constructor for AppItem class with date

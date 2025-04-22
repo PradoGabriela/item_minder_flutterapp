@@ -15,7 +15,9 @@ class CategoriesWidget extends StatefulWidget {
 Future<List> getFilteredItems(String category) async {
   var filteredItems = await AppCategories().getItemsByCategory(category);
   if (kDebugMode) {
-    print(filteredItems);
+    filteredItems.forEach((item) {
+      debugPrint(item.key.toString());
+    });
   }
   return filteredItems;
 }

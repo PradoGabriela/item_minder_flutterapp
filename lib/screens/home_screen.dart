@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/categories_widget.dart';
 import 'package:item_minder_flutterapp/base/widgets/home_app_bar.dart';
 import 'package:item_minder_flutterapp/base/widgets/logo_title.dart';
 import 'package:item_minder_flutterapp/base/widgets/search_bar.dart';
 import 'package:item_minder_flutterapp/base/widgets/side_menu.dart';
 import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
-import 'package:item_minder_flutterapp/screens/notifications_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

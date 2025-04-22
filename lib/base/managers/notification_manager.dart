@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:item_minder_flutterapp/base/box_manager.dart';
-import 'package:item_minder_flutterapp/base/notification.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/notification.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationManager {
