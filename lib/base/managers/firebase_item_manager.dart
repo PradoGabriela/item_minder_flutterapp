@@ -84,14 +84,33 @@ class FirebaseItemManager {
         debugPrint('Failed to update item in Firebase: $e');
       }
     } else {
-      BoxManager().pendingSyncsBox.get(0)?.pendingItems.add(item);
-      BoxManager().pendingSyncsBox.get(0)?.save();
-      debugPrint('No internet connection. Item added to pending syncs.');
+      // If offline, add the item to pending syncs
+      //First check if the item is already in pending syncs
+
+      for (var pendingItem
+          in BoxManager().pendingSyncsBox.get(0)!.pendingItems) {
+        if (pendingItem.key == item.key) {
+          // If the item is already in pending syncs, delete it from the list and add the new item
+          BoxManager().pendingSyncsBox.get(0)?.pendingItems.removeWhere(
+              (pendingItem) => pendingItem.key == item.key); // Remove old item
+          BoxManager()
+              .pendingSyncsBox
+              .get(0)
+              ?.pendingItems
+              .add(item); // Add new item
+          debugPrint('Item is already in pending syncs. No action taken.');
+        } else {
+          BoxManager().pendingSyncsBox.get(0)?.pendingItems.add(item);
+          BoxManager().pendingSyncsBox.get(0)?.save();
+          debugPrint('No internet connection. Item added to pending syncs.');
+        }
+      }
     }
   }
 
   Future<bool> isItemInFirebase(String itemId) async {
     // Check if an item exists in Firebase
+
     try {
       final snapshot =
           await FirebaseDatabase.instance.ref('items/$itemId').once();
@@ -110,17 +129,24 @@ class FirebaseItemManager {
 
   Future<void> deleteItemFromFirebase(String itemId) async {
     // Delete an item from Firebase
-    try {
-      await FirebaseDatabase.instance.ref('items/$itemId').remove();
-      debugPrint('Item deleted from Firebase: $itemId');
-    } catch (e) {
-      debugPrint('Failed to delete item from Firebase: $e');
+    if (await ConnectivityService().isOnline) {
+      try {
+        await FirebaseDatabase.instance.ref('items/$itemId').remove();
+        debugPrint('Item deleted from Firebase: $itemId');
+      } catch (e) {
+        debugPrint('Failed to delete item from Firebase: $e');
+      }
+    } else {
+      // If offline, add the item to pending remove syncs
+      BoxManager().pendingSyncsBox.get(0)?.pendingItems.removeWhere(
+          (pendingItem) => pendingItem.key == itemId); // Remove old item
+      BoxManager()
+          .pendingSyncsBox
+          .get(0)
+          ?.pendingItemsToRemove
+          .add(int.parse(itemId));
+      BoxManager().pendingSyncsBox.get(0)?.save();
+      debugPrint('No internet connection. Item added to pending syncs.');
     }
-  }
-
-  Future<List<AppItem>> getItemsFromFirebase() async {
-    // Retrieve items from Firebase
-    // Implement the logic to retrieve items from Firebase
-    return []; // Return the list of items retrieved from Firebase
   }
 }

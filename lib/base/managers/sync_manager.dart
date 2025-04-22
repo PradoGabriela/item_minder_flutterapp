@@ -18,6 +18,9 @@ class SyncManager {
     final box = BoxManager().pendingSyncsBox;
     if (box.isEmpty) {
       box.add(PendingSyncs()); //default with empty lists
+    } else {
+      debugPrint(
+          'PedingSyncs Lenght: ${box.get(0)?.pendingItems.length} ${box.get(0)?.pendingItems}');
     }
   }
 
@@ -43,9 +46,15 @@ class SyncManager {
             debugPrint("Error syncing item: $error");
           });
         }
-        //pendingSyncs.pendingItems.clear(); // Clear the list after syncing
-        await pendingSyncs.save(); // Save the changes to the box
       }
+      //deletes items in queu to remove
+      if (pendingSyncs.pendingItemsToRemove.isNotEmpty) {
+        for (int itemID in pendingSyncs.pendingItemsToRemove) {
+          FirebaseItemManager().deleteItemFromFirebase('$itemID');
+          pendingSyncs.pendingItemsToRemove.remove(itemID);
+        }
+      }
+      await pendingSyncs.save(); // Save the changes to the box
     }
   }
 }

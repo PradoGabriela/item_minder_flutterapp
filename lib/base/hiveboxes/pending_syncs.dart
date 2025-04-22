@@ -14,4 +14,7 @@ class PendingSyncs extends HiveObject {
 
   @HiveField(2)
   List<AppShopping> pendingShopping = [];
+
+  @HiveField(3)
+  List<int> pendingItemsToRemove = [];
 }

@@ -19,19 +19,22 @@ class PendingSyncsAdapter extends TypeAdapter<PendingSyncs> {
     return PendingSyncs()
       ..pendingItems = (fields[0] as List).cast<AppItem>()
       ..pendingNotifications = (fields[1] as List).cast<Notification>()
-      ..pendingShopping = (fields[2] as List).cast<AppShopping>();
+      ..pendingShopping = (fields[2] as List).cast<AppShopping>()
+      ..pendingItemsToRemove = (fields[3] as List).cast<int>();
   }
 
   @override
   void write(BinaryWriter writer, PendingSyncs obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.pendingItems)
       ..writeByte(1)
       ..write(obj.pendingNotifications)
       ..writeByte(2)
-      ..write(obj.pendingShopping);
+      ..write(obj.pendingShopping)
+      ..writeByte(3)
+      ..write(obj.pendingItemsToRemove);
   }
 
   @override

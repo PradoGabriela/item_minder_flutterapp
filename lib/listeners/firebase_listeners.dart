@@ -22,6 +22,14 @@ class FirebaseListeners {
       try {
         final itemData = Map<String, dynamic>.from(event.snapshot.value as Map);
         if (itemData['lastUpdatedBy']?.toString() != currentDeviceId) {
+          // Check if the item already exists in the local box
+          final existingItem =
+              BoxManager().itemBox.get(int.parse(event.snapshot.key!));
+          if (existingItem != null) {
+            debugPrint(
+                'Item already exists in local box: ${event.snapshot.key}');
+            return; // Skip adding if it already exists
+          }
           final item = AppItem.fromJson(itemData);
           BoxManager().itemBox.add(item); // Use Firebase push ID as key
           debugPrint('🆕 New item added: ${event.snapshot.key}');
