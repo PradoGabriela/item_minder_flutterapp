@@ -1,31 +1,35 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
 import 'package:item_minder_flutterapp/screens/add_item_screen.dart';
 
 class CategoriesWidget extends StatefulWidget {
-  const CategoriesWidget({super.key});
+  final String? currentGroupId;
+  const CategoriesWidget({super.key, required this.currentGroupId});
 
   @override
   State<CategoriesWidget> createState() => _CategoriesWidgetState();
 }
 
-Future<List> getFilteredItems(String category) async {
-  var filteredItems = await AppCategories().getItemsByCategory(category);
-  if (kDebugMode) {
-    filteredItems.forEach((item) {
-      debugPrint(item.key.toString());
-    });
-  }
-  return filteredItems;
-}
-
-int _selectedIndex = 0;
-int _maxIndex = AppCategories().categoriesDB.length - 1;
-
 class _CategoriesWidgetState extends State<CategoriesWidget> {
+  Future<List> getFilteredItems(String category) async {
+    var filteredItems = await AppCategories().getItemsByCategory(category);
+    if (kDebugMode) {
+      filteredItems.forEach((item) {
+        debugPrint(item.key.toString());
+      });
+    }
+    return filteredItems;
+  }
+
+  int _selectedIndex = 0;
+  int _maxIndex = AppCategories().categoriesDB.length - 1;
+
+  //List of categories to be displayed in the dropdown menu
   List<String> dropValueList = AppCategories().categoriesDB;
   String dropdownValue = "";
   int _dropSelectedIndex = 0;
@@ -39,6 +43,22 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
         print('DropVAlue $dropdownValue');
       }
     });
+  }
+
+  _onItemsChanged() {
+    setState(() {
+      // This will trigger a rebuild when the items in the box change
+      _onCategorySwipped(_selectedIndex);
+      if (kDebugMode) {
+        print('Items changed, rebuilding widget...');
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    BoxManager().itemBox.listenable().addListener(_onItemsChanged);
   }
 
   @override
@@ -174,7 +194,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                               MaterialPageRoute(
                                 builder: (context) => AddItemScreen(
                                     currentCategory: AppCategories()
-                                        .categoriesDBRaw[_selectedIndex]),
+                                        .categoriesDBRaw[_selectedIndex],
+                                    currentGroupId: widget.currentGroupId),
                               ),
                             ).then((_) {
                               setState(() {});
@@ -225,8 +246,10 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => AddItemScreen(
-                                          currentCategory: AppCategories()
-                                              .categoriesDBRaw[_selectedIndex]),
+                                        currentCategory: AppCategories()
+                                            .categoriesDBRaw[_selectedIndex],
+                                        currentGroupId: widget.currentGroupId,
+                                      ),
                                     ),
                                   ).then((_) {
                                     setState(() {});
@@ -261,5 +284,11 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    BoxManager().itemBox.listenable().removeListener(_onItemsChanged);
+    super.dispose();
   }
 }

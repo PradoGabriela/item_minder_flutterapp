@@ -7,19 +7,26 @@ import 'package:item_minder_flutterapp/screens/home_screen.dart';
 import 'package:item_minder_flutterapp/screens/shopping_list_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
-  const BottomNavBar({super.key});
+  final String? currentGroupId;
+  const BottomNavBar({super.key, required this.currentGroupId});
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  final appScreens = [
-    const HomeScreen(),
-    const ShoppingListScreen(),
-    const CalendarScreen(),
-    const ProfileScreen(),
-  ];
+  late final List<Widget> appScreens;
+
+  @override
+  void initState() {
+    super.initState();
+    appScreens = [
+      HomeScreen(groupId: widget.currentGroupId),
+      const ShoppingListScreen(),
+      const CalendarScreen(),
+      const ProfileScreen(),
+    ];
+  }
 
   var _selectedIndex = 0;
 

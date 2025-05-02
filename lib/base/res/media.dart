@@ -10,6 +10,7 @@ class AppMedia {
   //Icons for items
   static const String _otherIcon = '$_iconsBasePath/logo.png';
   static const String _addImgIcon = '$_iconsBasePath/logo.png';
+  static const String _familyIcon = '$_iconsBasePath/family.png';
 
   //Images for Items
   static const String bed = '$_basePath/bed.png';
@@ -19,6 +20,7 @@ class AppMedia {
   String get logoTop => _logoTop;
   String get otherIcon => _otherIcon;
   String get addImgIcon => _addImgIcon;
+  String get familyIcon => _familyIcon;
 
   String getItemIcon(String itemType) {
     debugPrint('$_basePath/$itemType.png');

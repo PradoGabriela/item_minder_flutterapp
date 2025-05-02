@@ -30,13 +30,14 @@ class AppItemAdapter extends TypeAdapter<AppItem> {
       ..isAutoAdd = fields[10] as bool
       ..addedDateString = fields[11] as String
       ..lastUpdated = fields[12] as DateTime
-      ..lastUpdatedBy = fields[13] as String;
+      ..lastUpdatedBy = fields[13] as String
+      ..groupID = fields[14] as String;
   }
 
   @override
   void write(BinaryWriter writer, AppItem obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.brandName)
       ..writeByte(1)
@@ -64,7 +65,9 @@ class AppItemAdapter extends TypeAdapter<AppItem> {
       ..writeByte(12)
       ..write(obj.lastUpdated)
       ..writeByte(13)
-      ..write(obj.lastUpdatedBy);
+      ..write(obj.lastUpdatedBy)
+      ..writeByte(14)
+      ..write(obj.groupID);
   }
 
   @override

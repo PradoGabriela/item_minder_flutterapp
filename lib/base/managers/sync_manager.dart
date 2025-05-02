@@ -39,7 +39,7 @@ class SyncManager {
           });
         } else {
           // If the item does not exist in Firebase, add it
-          FirebaseItemManager().addItemToFirebase(item).then((_) {
+          FirebaseItemManager().addItemToFirebase(item.groupID, item).then((_) {
             pendingSyncs.pendingItems.remove(item);
           }).catchError((error) {
             // Handle error if needed

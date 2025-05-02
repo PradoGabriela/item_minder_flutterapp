@@ -5,7 +5,9 @@ import 'package:item_minder_flutterapp/base/widgets/add_widget.dart';
 
 class AddItemScreen extends StatelessWidget {
   final Categories currentCategory;
-  const AddItemScreen({super.key, required this.currentCategory});
+  final String? currentGroupId;
+  const AddItemScreen(
+      {super.key, required this.currentCategory, required this.currentGroupId});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +18,8 @@ class AddItemScreen extends StatelessWidget {
         titleTextStyle: AppStyles().appBarTextStyle,
         centerTitle: true,
       ),
-      body: AddWidget(currentCategory: currentCategory),
+      body: AddWidget(
+          currentCategory: currentCategory, currentGroupId: currentGroupId),
     );
   }
 }

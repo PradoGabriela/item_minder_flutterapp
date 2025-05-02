@@ -23,10 +23,10 @@ class FirebaseItemManager {
   get ref => FirebaseDatabase.instance.ref('items');
 
 // Add an item to Firebase
-  Future<void> addItemToFirebase(AppItem item) async {
+  Future<void> addItemToFirebase(String groupID, AppItem item) async {
     if (await ConnectivityService().isOnline) {
       try {
-        await FirebaseDatabase.instance.ref('items/${item.key}').set(
+        await FirebaseDatabase.instance.ref('$groupID/items/${item.key}').set(
           {
             'id': item.key,
             'brandName': item.brandName,
@@ -41,8 +41,9 @@ class FirebaseItemManager {
             'maxQuantity': item.maxQuantity,
             'isAutoAdd': item.isAutoAdd,
             'addedDateString': item.addedDateString,
-            'lastUpdated': DateTime.now().toIso8601String(),
+            'lastUpdated': DateTime.now().toString(),
             'lastUpdatedBy': item.lastUpdatedBy,
+            'groupID': groupID,
           },
         );
         debugPrint('✅ Item added to Firebase: ${item.type} (ID: ${item.key})');
@@ -75,7 +76,7 @@ class FirebaseItemManager {
             'minQuantity': item.minQuantity,
             'maxQuantity': item.maxQuantity,
             'isAutoAdd': item.isAutoAdd,
-            'lastUpdated': DateTime.now().toIso8601String(),
+            'lastUpdated': DateTime.now().toString(),
             'lastUpdatedBy': item.lastUpdatedBy,
           },
         );

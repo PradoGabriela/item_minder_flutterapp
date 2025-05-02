@@ -10,7 +10,7 @@ class FirebaseListeners {
   /// It listens for changes in the 'items' node and updates the local Hive box with the new data.
   ///
   /// Future<void> setupFirebaseListeners() async {
-
+//TODO: FIX THE LISTENERS TO WORK WITH THE NEW FIREBASE STRUCTURE
   Future<void> setupFirebaseListeners() async {
     final currentDeviceId =
         await DeviceId().getDeviceId(); // Don't forget await!
@@ -26,9 +26,23 @@ class FirebaseListeners {
           final existingItem =
               BoxManager().itemBox.get(int.parse(event.snapshot.key!));
           if (existingItem != null) {
-            debugPrint(
-                'Item already exists in local box: ${event.snapshot.key}');
-            return; // Skip adding if it already exists
+            var compareTo = existingItem.lastUpdated
+                .toString()
+                .substring(0, 19)
+                .compareTo(itemData['lastUpdated'].toString().substring(0, 19));
+            if (compareTo != 0) {
+              // Update the existing item if it was updated by another device
+              ItemManager().editItemFromFirebase(
+                  int.parse(event.snapshot.key!), AppItem.fromJson(itemData));
+              debugPrint(
+                  '🔄 Item updated in local box: ${event.snapshot.key}, firebase item last date: ${itemData['lastUpdated']?.toString()} and hive box date ${existingItem.lastUpdated}, compareT0 $compareTo');
+              return;
+            } else {
+              // Skip adding if it already exists and was not updated by another device
+              debugPrint(
+                  'Item already exists in local box and was not updated: ${event.snapshot.key}');
+              return;
+            }
           }
           final item = AppItem.fromJson(itemData);
           BoxManager().itemBox.add(item); // Use Firebase push ID as key

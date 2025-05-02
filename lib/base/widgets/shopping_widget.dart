@@ -99,7 +99,7 @@ class _ShoppingWidgetState extends State<ShoppingWidget> {
   }
 
   void _navigateToAddItemScreen() {
-    Navigator.push(
+/*     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => const AddItemScreen(
@@ -107,7 +107,7 @@ class _ShoppingWidgetState extends State<ShoppingWidget> {
               )),
     ).then((value) {
       setState(() {}); // Refresh the screen after returning from AddItemScreen
-    });
+    }); */
   }
 
   @override

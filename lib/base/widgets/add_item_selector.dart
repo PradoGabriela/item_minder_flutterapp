@@ -8,8 +8,10 @@ import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 
 class AddItemSelector extends StatefulWidget {
   final dynamic currentCategory;
+  final String? currentGroupId;
 
-  const AddItemSelector({super.key, required this.currentCategory});
+  const AddItemSelector(
+      {super.key, required this.currentCategory, required this.currentGroupId});
   @override
   State<AddItemSelector> createState() => _AddItemSelectorState();
 }
@@ -61,7 +63,8 @@ class _AddItemSelectorState extends State<AddItemSelector> {
   final TextEditingController _priceController = TextEditingController();
   bool _isAutoadd = false;
 
-  void _submitForm() {
+  void _submitForm(String groupID) {
+    // Validate the form fields
     if (_formKey.currentState!.validate()) {
       String brandName = _brandNameController.text;
       String description = _descriptionController.text;
@@ -85,6 +88,7 @@ class _AddItemSelectorState extends State<AddItemSelector> {
 
       ItemManager itemManager = ItemManager();
       itemManager.addCustomItem(
+        groupID: groupID,
         brandName: brandName,
         description: description,
         iconUrl: AppMedia().getItemIcon(type.toLowerCase()),
@@ -399,7 +403,7 @@ class _AddItemSelectorState extends State<AddItemSelector> {
                         const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            _submitForm();
+                            _submitForm(widget.currentGroupId!);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppStyles().getPrimaryColor(),

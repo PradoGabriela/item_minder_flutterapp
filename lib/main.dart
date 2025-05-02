@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/pending_syncs.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
@@ -13,6 +14,7 @@ import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 import 'package:item_minder_flutterapp/listeners/firebase_listeners.dart';
+import 'package:item_minder_flutterapp/screens/starter_screen.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
 
 Future<void> main() async {
@@ -23,12 +25,13 @@ Future<void> main() async {
   Hive.registerAdapter(AppNotificationAdapter());
   Hive.registerAdapter(AppShoppingAdapter());
   Hive.registerAdapter(PendingSyncsAdapter());
+  Hive.registerAdapter(AppGroupAdapter());
 
   NotificationManager().initializeNotifications();
   NotificationManager().checkNotificationPermission();
 
   await BoxManager().openBoxes();
-  ShoppingManager().initShoppingList(); // Initialize the shopping list
+  //todo ShoppingManager().initShoppingList(); // Initialize the shopping list
   // Check if Firebase is already initialized
 
   // Safe initialization
@@ -43,7 +46,7 @@ Future<void> main() async {
 
   ConnectivityService().setupConnectivityListener();
   SyncManager().initSync(); // Initialize sync manager
-  FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
+  //TODO FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
 
   runApp(const MyApp());
 }
@@ -57,9 +60,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Builder(
         builder: (context) {
-          return const Scaffold(
-            body: BottomNavBar(),
-          );
+          return StarterScreen();
         },
       ),
     );

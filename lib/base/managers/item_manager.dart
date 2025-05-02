@@ -4,6 +4,7 @@ import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_item_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 
 class ItemManager {
@@ -43,6 +44,7 @@ class ItemManager {
     required int minQuantity,
     required int maxQuantity,
     required bool isAutoadd,
+    required String groupID,
   }) async {
     try {
       // Set default values if null/empty
@@ -65,12 +67,16 @@ class ItemManager {
         minQuantity,
         maxQuantity,
         isAutoadd,
+        DateTime.now(), // Set last updated date to now
         DeviceId().getDeviceId(), // Set last updated by to device ID
+        groupID,
       );
 
       // Add to Hive box (assuming BoxManager().itemBox is a Hive Box)
       await BoxManager().itemBox.add(customItem);
-      FirebaseItemManager().addItemToFirebase(customItem); // Add to Firebase
+      await GroupManager().addItemToGroup(groupID, customItem.key!);
+      FirebaseItemManager()
+          .addItemToFirebase(groupID, customItem); // Add to Firebase
 
       if (kDebugMode) {
         print("Custom item added: ${customItem.toString()}");
@@ -145,7 +151,7 @@ class ItemManager {
     itemToEdit.maxQuantity = fireItem.maxQuantity;
     itemToEdit.isAutoAdd = fireItem.isAutoAdd;
     itemToEdit.addedDateString = fireItem.addedDateString;
-    itemToEdit.lastUpdated = DateTime.now(); // Update last updated date
+    itemToEdit.lastUpdated = fireItem.lastUpdated; // Update last updated date
     itemToEdit.lastUpdatedBy = fireItem.lastUpdatedBy;
     itemToEdit.save();
   }

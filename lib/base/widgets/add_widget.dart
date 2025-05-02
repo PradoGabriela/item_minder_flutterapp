@@ -5,8 +5,10 @@ import 'package:item_minder_flutterapp/base/widgets/add_item_selector.dart';
 
 class AddWidget extends StatefulWidget {
   final dynamic currentCategory;
+  final String? currentGroupId;
 
-  const AddWidget({super.key, required this.currentCategory});
+  const AddWidget(
+      {super.key, required this.currentCategory, required this.currentGroupId});
 
   @override
   State<AddWidget> createState() => _AddWidgetState();
@@ -59,7 +61,9 @@ class _AddWidgetState extends State<AddWidget> {
                         ),
                       ),
                       //First Menu
-                      AddItemSelector(currentCategory: widget.currentCategory),
+                      AddItemSelector(
+                          currentCategory: widget.currentCategory,
+                          currentGroupId: widget.currentGroupId),
                     ],
                   );
                 },

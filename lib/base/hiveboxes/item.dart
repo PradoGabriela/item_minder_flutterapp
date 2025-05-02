@@ -322,20 +322,26 @@ class AppItem extends HiveObject {
   @HiveField(13)
   String lastUpdatedBy = ""; // Default last updated by is the device ID
 
+  @HiveField(14)
+  String groupID = ""; // Default group ID is an empty string
+
   AppItem(); // Constructor for AppItem class
   AppItem.custom(
-      this.brandName,
-      this.description,
-      this.iconUrl,
-      this.imageUrl,
-      this.category,
-      this.price,
-      this.type,
-      this.quantity,
-      this.minQuantity,
-      this.maxQuantity,
-      this.isAutoAdd,
-      this.lastUpdatedBy); // Custom constructor for AppItem class
+    this.brandName,
+    this.description,
+    this.iconUrl,
+    this.imageUrl,
+    this.category,
+    this.price,
+    this.type,
+    this.quantity,
+    this.minQuantity,
+    this.maxQuantity,
+    this.isAutoAdd,
+    this.lastUpdated,
+    this.lastUpdatedBy,
+    this.groupID,
+  ); // Custom constructor for AppItem class
   AppItem.customWithDate(
       this.brandName,
       this.description,
@@ -348,7 +354,8 @@ class AppItem extends HiveObject {
       this.minQuantity,
       this.maxQuantity,
       this.lastUpdatedBy,
-      this.isAutoAdd);
+      this.isAutoAdd,
+      this.groupID);
 
   static fromJson(jsonData) {
     // Convert JSON data to AppItem object
@@ -364,7 +371,9 @@ class AppItem extends HiveObject {
       (jsonData['minQuantity'] ?? 1).toInt(),
       (jsonData['maxQuantity'] ?? 4).toInt(),
       (jsonData['isAutoAdd'] ?? false) as bool,
+      DateTime.parse(jsonData['lastUpdated'] ?? DateTime.now().toString()),
       jsonData['lastUpdatedBy'] ?? DeviceId().getDeviceId(),
+      jsonData['groupID'] ?? "no id provided",
     );
   }
 

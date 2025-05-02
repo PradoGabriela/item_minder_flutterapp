@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/notification.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/pending_syncs.dart';
@@ -17,6 +18,9 @@ class BoxManager {
 
     var _pendingSyncsBox = await Hive.openBox<PendingSyncs>(
         'pendingSyncsBox'); // Open a box for AppItem
+
+    var _groupBox =
+        await Hive.openBox<AppGroup>('appGroupBox'); // Open a box for AppItem
   }
 
   Box<AppItem> get itemBox {
@@ -35,11 +39,16 @@ class BoxManager {
     return Hive.box('pendingSyncsBox');
   }
 
+  Box<AppGroup> get groupBox {
+    return Hive.box('appGroupBox');
+  }
+
   void clearAllBox() {
     itemBox.clear();
     notificationBox.clear();
     shoppingBox.clear();
     pendingSyncsBox.clear();
+    groupBox.clear();
     if (kDebugMode) {
       print("Clearing Database");
     }
@@ -50,5 +59,9 @@ class BoxManager {
     notificationBox.close();
     shoppingBox.close();
     pendingSyncsBox.close();
+    groupBox.close();
+    if (kDebugMode) {
+      print("Closing Database");
+    }
   }
 }

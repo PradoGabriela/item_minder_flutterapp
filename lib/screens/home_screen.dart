@@ -7,7 +7,8 @@ import 'package:item_minder_flutterapp/base/widgets/side_menu.dart';
 import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final String? groupId;
+  const HomeScreen({super.key, required this.groupId});
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +19,18 @@ class HomeScreen extends StatelessWidget {
       //Change this listview for static content
       body: ListView(
         physics: const NeverScrollableScrollPhysics(),
-        children: const [
-          Column(
+        children: [
+          const Column(
             children: [
               AppLogoTitle(), //Logo widget place Size 140x140 pixels, remember to fix pubspec.yaml to allow images
               AppTitleText(), //Logo widget text place Size 40x340 pixels, remember to fix pubspec.yaml to allow images
             ],
           ),
-          SizedBox(height: 12),
-          AppSearchBar(), //Search bar configuration
-          SizedBox(height: 12),
-          CategoriesWidget()
+          const SizedBox(height: 12),
+          const AppSearchBar(), //Search bar configuration
+          const SizedBox(height: 12),
+          CategoriesWidget(
+              currentGroupId: groupId), //Categories widget configuration
         ],
       ),
     );
