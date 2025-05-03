@@ -7,7 +7,7 @@ import 'package:item_minder_flutterapp/base/widgets/side_menu.dart';
 import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
 
 class HomeScreen extends StatelessWidget {
-  final String? groupId;
+  final String groupId;
   const HomeScreen({super.key, required this.groupId});
 
   @override

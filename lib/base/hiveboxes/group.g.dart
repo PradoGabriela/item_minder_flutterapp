@@ -23,20 +23,19 @@ class AppGroupAdapter extends TypeAdapter<AppGroup> {
       createdBy: fields[3] as String,
       groupIconUrl: fields[4] as String,
       itemsID: (fields[5] as List).cast<int>(),
-      notificationsID: (fields[6] as List).cast<int>(),
-      pendingSyncsID: (fields[7] as List).cast<int>(),
-      shoppingListID: (fields[8] as List).cast<int>(),
-      categoriesNames: (fields[9] as List).cast<String>(),
-      lastUpdatedBy: fields[10] as String,
-      lastUpdatedDateString: fields[11] as String,
-      createdByDeviceId: fields[12] as String,
+      pendingSyncsID: (fields[6] as List).cast<int>(),
+      shoppingListID: (fields[7] as List).cast<int>(),
+      categoriesNames: (fields[8] as List).cast<String>(),
+      lastUpdatedBy: fields[9] as String,
+      lastUpdatedDateString: fields[10] as String,
+      createdByDeviceId: fields[11] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppGroup obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.groupID)
       ..writeByte(1)
@@ -50,18 +49,16 @@ class AppGroupAdapter extends TypeAdapter<AppGroup> {
       ..writeByte(5)
       ..write(obj.itemsID)
       ..writeByte(6)
-      ..write(obj.notificationsID)
-      ..writeByte(7)
       ..write(obj.pendingSyncsID)
-      ..writeByte(8)
+      ..writeByte(7)
       ..write(obj.shoppingListID)
-      ..writeByte(9)
+      ..writeByte(8)
       ..write(obj.categoriesNames)
-      ..writeByte(10)
+      ..writeByte(9)
       ..write(obj.lastUpdatedBy)
-      ..writeByte(11)
+      ..writeByte(10)
       ..write(obj.lastUpdatedDateString)
-      ..writeByte(12)
+      ..writeByte(11)
       ..write(obj.createdByDeviceId);
   }
 

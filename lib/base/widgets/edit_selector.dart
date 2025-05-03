@@ -10,9 +10,13 @@ import 'package:item_minder_flutterapp/base/widgets/upload_image_widget.dart';
 
 class EditSelector extends StatefulWidget {
   final dynamic passItem;
+  final String groupID;
   final bool isEditMode;
   const EditSelector(
-      {super.key, required this.passItem, this.isEditMode = false});
+      {super.key,
+      required this.passItem,
+      this.isEditMode = false,
+      required this.groupID});
 
   @override
   State<EditSelector> createState() => _EditSelectorState();
@@ -97,6 +101,7 @@ class _EditSelectorState extends State<EditSelector> {
       }
       ItemManager itemManager = ItemManager();
       itemManager.editItem(
+        widget.groupID,
         widget.passItem,
         brandName: brandName,
         description: description,
@@ -127,7 +132,7 @@ class _EditSelectorState extends State<EditSelector> {
 
   void _removeCurrentItem() {
     ItemManager itemManager = ItemManager();
-    itemManager.removeItem(widget.passItem);
+    itemManager.removeItem(widget.groupID, widget.passItem);
     Navigator.pop(context, true);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

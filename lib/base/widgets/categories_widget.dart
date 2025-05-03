@@ -8,7 +8,7 @@ import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
 import 'package:item_minder_flutterapp/screens/add_item_screen.dart';
 
 class CategoriesWidget extends StatefulWidget {
-  final String? currentGroupId;
+  final String currentGroupId;
   const CategoriesWidget({super.key, required this.currentGroupId});
 
   @override
@@ -16,8 +16,9 @@ class CategoriesWidget extends StatefulWidget {
 }
 
 class _CategoriesWidgetState extends State<CategoriesWidget> {
-  Future<List> getFilteredItems(String category) async {
-    var filteredItems = await AppCategories().getItemsByCategory(category);
+  Future<List> getFilteredItems(String groupID, String category) async {
+    var filteredItems =
+        await AppCategories().getItemsByCategory(groupID, category);
     if (kDebugMode) {
       filteredItems.forEach((item) {
         debugPrint(item.key.toString());
@@ -58,7 +59,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   @override
   void initState() {
     super.initState();
-    BoxManager().itemBox.listenable().addListener(_onItemsChanged);
+    //TODO fix listener BoxManager().itemBox.listenable().addListener(_onItemsChanged);
   }
 
   @override
@@ -167,8 +168,10 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
 
               child: FutureBuilder<List<dynamic>>(
                 // Use the FutureBuilder to handle asynchronous data fetching
-                future: getFilteredItems(AppCategories().categoriesDB[
-                    _selectedIndex]), // Provide your asynchronous method here
+                future: getFilteredItems(
+                    widget.currentGroupId,
+                    AppCategories().categoriesDB[
+                        _selectedIndex]), // Provide your asynchronous method here
                 builder: (BuildContext context,
                     AsyncSnapshot<List<dynamic>> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -288,7 +291,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
 
   @override
   void dispose() {
-    BoxManager().itemBox.listenable().removeListener(_onItemsChanged);
+    //todo FixListener BoxManager().itemBox.listenable().removeListener(_onItemsChanged);
     super.dispose();
   }
 }

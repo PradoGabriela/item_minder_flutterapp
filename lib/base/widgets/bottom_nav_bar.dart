@@ -7,7 +7,7 @@ import 'package:item_minder_flutterapp/screens/home_screen.dart';
 import 'package:item_minder_flutterapp/screens/shopping_list_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
-  final String? currentGroupId;
+  final String currentGroupId;
   const BottomNavBar({super.key, required this.currentGroupId});
 
   @override

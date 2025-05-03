@@ -25,24 +25,21 @@ class AppGroup extends HiveObject {
   List<int> itemsID;
 
   @HiveField(6)
-  List<int> notificationsID;
-
-  @HiveField(7)
   List<int> pendingSyncsID;
 
-  @HiveField(8)
+  @HiveField(7)
   List<int> shoppingListID;
 
-  @HiveField(9)
+  @HiveField(8)
   List<String> categoriesNames;
 
-  @HiveField(10)
+  @HiveField(9)
   String lastUpdatedBy;
 
-  @HiveField(11)
+  @HiveField(10)
   String lastUpdatedDateString;
 
-  @HiveField(12)
+  @HiveField(11)
   String createdByDeviceId;
 
   AppGroup({
@@ -52,7 +49,6 @@ class AppGroup extends HiveObject {
     required this.createdBy,
     required this.groupIconUrl,
     required this.itemsID,
-    required this.notificationsID,
     required this.pendingSyncsID,
     required this.shoppingListID,
     required this.categoriesNames,

@@ -24,13 +24,15 @@ class SyncManager {
     }
   }
 
-  Future<void> syncPendingItems() async {
+  Future<void> syncPendingItems(String groupID) async {
     final pendingSyncs = BoxManager().pendingSyncsBox.get(0);
     if (pendingSyncs != null) {
       for (AppItem item in pendingSyncs.pendingItems) {
-        if (await FirebaseItemManager().isItemInFirebase(item.key)) {
+        if (await FirebaseItemManager().isItemInFirebase(groupID, item.key)) {
           // If the item already exists in Firebase, update it
-          FirebaseItemManager().updateItemInFirebase(item, item.key).then((_) {
+          FirebaseItemManager()
+              .updateItemInFirebase(groupID, item, item.key)
+              .then((_) {
             // Remove the item from the pending list after successful sync
             pendingSyncs.pendingItems.remove(item);
           }).catchError((error) {
@@ -50,7 +52,7 @@ class SyncManager {
       //deletes items in queu to remove
       if (pendingSyncs.pendingItemsToRemove.isNotEmpty) {
         for (int itemID in pendingSyncs.pendingItemsToRemove) {
-          FirebaseItemManager().deleteItemFromFirebase('$itemID');
+          FirebaseItemManager().deleteItemFromFirebase(groupID, '$itemID');
           pendingSyncs.pendingItemsToRemove.remove(itemID);
         }
       }

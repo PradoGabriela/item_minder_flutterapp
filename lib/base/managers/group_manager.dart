@@ -39,7 +39,6 @@ class GroupManager {
       members: [createdBy],
       groupIconUrl: groupIconUrl,
       itemsID: [],
-      notificationsID: [],
       pendingSyncsID: [],
       shoppingListID: [],
       categoriesNames: categoriesNames,
@@ -88,24 +87,6 @@ class GroupManager {
     return id; // Return the unique ID
   }
 
-  //EditGroup
-  Future<void> editItemListGroup(passGroup,
-      {required AppGroup group, List<int>? itemsID}) async {
-    try {
-      if (itemsID != null) group.itemsID = itemsID;
-      group.lastUpdatedBy = DeviceId().getDeviceId();
-      group.lastUpdatedDateString = DateTime.now().toString();
-    } catch (e) {
-      debugPrint('❌ Error updating group: $e');
-    } finally {
-      // Save the updated group to Hive
-      await BoxManager().groupBox.put(group.key, group);
-      // Update the group in Firebase
-      await FirebaseGroupManager().updateListInGroupInFirebase(group);
-      debugPrint('✅ Group updated: ${group.groupName} (ID: ${group.groupID})');
-    }
-  }
-
   //add an item to the group with the groupID
   Future<void> addItemToGroup(
     String groupID,
@@ -117,15 +98,44 @@ class GroupManager {
             (group) => group.groupID == groupID,
             orElse: () => throw Exception('Group not found'),
           );
-      // Add the item ID to the group's itemsID list
-      group.itemsID.add(itemID);
-      group.lastUpdatedBy = DeviceId().getDeviceId();
-      group.lastUpdatedDateString = DateTime.now().toString();
 
+      // Add the item ID to the group's itemsID list
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      groupToUpdate?.itemsID.add(itemID);
+      groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
+      groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
+      groupToUpdate?.save();
       // Update the group in Firebase
-      await FirebaseGroupManager().updateListInGroupInFirebase(group);
+      await FirebaseGroupManager().updateListInGroupInFirebase(groupToUpdate!);
     } catch (e) {
       debugPrint('❌ Error adding item to group: $e');
+    }
+  }
+
+  //remove an item from the group with the groupID
+  Future<void> removeItemFromGroup(
+    String groupID,
+    int itemID,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Remove the item ID from the group's itemsID list
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      groupToUpdate?.itemsID.remove(itemID);
+      groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
+      groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
+      groupToUpdate?.save();
+      // Update the group in Firebase
+      await FirebaseGroupManager().updateListInGroupInFirebase(groupToUpdate!);
+    } catch (e) {
+      debugPrint('❌ Error removing item from group: $e');
     }
   }
 }

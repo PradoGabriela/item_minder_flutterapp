@@ -61,6 +61,7 @@ class _EditWidgetState extends State<EditWidget> {
                       ),
                       //First Menu
                       EditSelector(
+                        groupID: widget.passItem.groupID,
                         passItem: widget.passItem,
                       ),
                     ],

@@ -91,6 +91,7 @@ class ItemManager {
   }
 
   Future<void> editItem(
+    String groupID,
     passItem, {
     required AppItem item,
     String? brandName,
@@ -124,7 +125,7 @@ class ItemManager {
       // Save changes (assuming Hive or similar key-value store)
       await BoxManager().itemBox.put(item.key, item);
       FirebaseItemManager()
-          .updateItemInFirebase(item, item.key); // Update in Firebase
+          .updateItemInFirebase(groupID, item, item.key); // Update in Firebase
 
       if (kDebugMode) {
         print("Item updated: ${item.toString()}");
@@ -139,6 +140,14 @@ class ItemManager {
 
   Future<void> editItemFromFirebase(int id, AppItem fireItem) async {
     AppItem itemToEdit = BoxManager().itemBox.get(id)!;
+    //check if the same grupID
+    if (itemToEdit.groupID != fireItem.groupID) {
+      if (kDebugMode) {
+        print(
+            "Item group ID mismatch: ${itemToEdit.groupID} vs ${fireItem.groupID}");
+      }
+      return; // Exit if group IDs do not match
+    }
     itemToEdit.brandName = fireItem.brandName;
     itemToEdit.description = fireItem.description;
     itemToEdit.iconUrl = fireItem.iconUrl;
@@ -153,15 +162,11 @@ class ItemManager {
     itemToEdit.addedDateString = fireItem.addedDateString;
     itemToEdit.lastUpdated = fireItem.lastUpdated; // Update last updated date
     itemToEdit.lastUpdatedBy = fireItem.lastUpdatedBy;
+
     itemToEdit.save();
   }
 
-  void addMiscItem() async {
-    AppItem miscItem = AppItem();
-    BoxManager().itemBox.add(miscItem);
-  }
-
-  Future<bool> removeItem(AppItem item) async {
+  Future<bool> removeItem(String groupID, AppItem item) async {
     try {
       if (item.key == null) {
         if (kDebugMode) {
@@ -169,10 +174,17 @@ class ItemManager {
         }
         return false;
       }
+      //check if the same grupID
+      if (item.groupID != groupID) {
+        if (kDebugMode) {
+          print("Item group ID mismatch: ${item.groupID} vs ${groupID}");
+        }
+        return false; // Exit if group IDs do not match
+      }
       String tempKey = item.key.toString();
       await BoxManager().itemBox.delete(item.key!);
       await FirebaseItemManager()
-          .deleteItemFromFirebase(tempKey!); // Remove from Firebase
+          .deleteItemFromFirebase(groupID, tempKey!); // Remove from Firebase
 
       if (kDebugMode) {
         print("Item removed: ${item.toString()}");

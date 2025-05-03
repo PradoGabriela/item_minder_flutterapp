@@ -93,6 +93,7 @@ class _GroupsWidgetState extends State<GroupsWidget> {
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, index) {
                             return GroupCard(
+                              groupId: snapshot.data![index].groupID,
                               groupName: snapshot.data![index].groupName,
                               groupIconUrl: snapshot.data![index].groupIconUrl,
                               members: snapshot.data![index].members,

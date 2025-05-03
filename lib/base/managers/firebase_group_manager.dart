@@ -27,7 +27,6 @@ class FirebaseGroupManager {
           'members': group.members,
           'groupIconUrl': group.groupIconUrl,
           'itemsID': group.itemsID,
-          'notificationsID': group.notificationsID,
           'pendingSyncsID': group.pendingSyncsID,
           'shoppingListID': group.shoppingListID,
           'categoriesNames': group.categoriesNames,
@@ -70,7 +69,6 @@ class FirebaseGroupManager {
         await ref.child(group.groupID).update(
           {
             'itemsID': group.itemsID,
-            'notificationsID': group.notificationsID,
             'pendingSyncsID': group.pendingSyncsID,
             'shoppingListID': group.shoppingListID,
             'lastUpdatedBy': group.lastUpdatedBy,

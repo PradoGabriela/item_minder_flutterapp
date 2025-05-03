@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/base/widgets/bottom_nav_bar.dart';
 
 class GroupCard extends StatefulWidget {
+  final String groupId;
   final String groupName;
   final String groupIconUrl;
   final List<String> members;
 
   const GroupCard({
     super.key,
+    required this.groupId,
     required this.groupName,
     required this.groupIconUrl,
     required this.members,
@@ -42,7 +45,15 @@ class _GroupCardState extends State<GroupCard> {
         ),
         child: InkResponse(
           onLongPress: () {
-            // Handle long press action here
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    BottomNavBar(currentGroupId: widget.groupId),
+              ),
+            ).then((result) {
+              setState(() {});
+            });
           },
           splashColor: Colors.grey, // Customize splash color
           child: Container(

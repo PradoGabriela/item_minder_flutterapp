@@ -15,7 +15,7 @@ class ConnectivityService {
   void setupConnectivityListener() {
     Connectivity().onConnectivityChanged.listen((result) {
       if (result != ConnectivityResult.none) {
-        SyncManager().syncPendingItems(); // Retry when connection is restored
+        //TODO FIx SyncManager().syncPendingItems(); // Retry when connection is restored
       }
     });
   }

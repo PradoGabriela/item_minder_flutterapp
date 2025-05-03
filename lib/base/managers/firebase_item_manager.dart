@@ -20,13 +20,14 @@ class FirebaseItemManager {
   }
 
   get firebaseDatabase => FirebaseDatabase.instance;
-  get ref => FirebaseDatabase.instance.ref('items');
 
 // Add an item to Firebase
   Future<void> addItemToFirebase(String groupID, AppItem item) async {
     if (await ConnectivityService().isOnline) {
       try {
-        await FirebaseDatabase.instance.ref('$groupID/items/${item.key}').set(
+        await FirebaseDatabase.instance
+            .ref('groups/$groupID/itemsID/${item.key}')
+            .set(
           {
             'id': item.key,
             'brandName': item.brandName,
@@ -57,12 +58,15 @@ class FirebaseItemManager {
     }
   }
 
-  Future<void> updateItemInFirebase(AppItem item, dynamic itemKey) async {
+  Future<void> updateItemInFirebase(
+      String groupID, AppItem item, dynamic itemKey) async {
     // Update an item in Firebase
     // Implement the logic to update the item in Firebase
     if (await ConnectivityService().isOnline) {
       try {
-        await FirebaseDatabase.instance.ref('items/$itemKey').update(
+        await FirebaseDatabase.instance
+            .ref('groups/$groupID/itemsID/$itemKey')
+            .update(
           {
             'id': '$itemKey',
             'brandName': item.brandName,
@@ -109,12 +113,13 @@ class FirebaseItemManager {
     }
   }
 
-  Future<bool> isItemInFirebase(String itemId) async {
+  Future<bool> isItemInFirebase(String groupID, String itemId) async {
     // Check if an item exists in Firebase
 
     try {
-      final snapshot =
-          await FirebaseDatabase.instance.ref('items/$itemId').once();
+      final snapshot = await FirebaseDatabase.instance
+          .ref('groups/$groupID/itemsID/$itemId')
+          .once();
       if (snapshot.snapshot.value != null) {
         debugPrint('Item exists in Firebase: $itemId');
         return true;
@@ -128,11 +133,13 @@ class FirebaseItemManager {
     }
   }
 
-  Future<void> deleteItemFromFirebase(String itemId) async {
+  Future<void> deleteItemFromFirebase(String groupID, String itemId) async {
     // Delete an item from Firebase
     if (await ConnectivityService().isOnline) {
       try {
-        await FirebaseDatabase.instance.ref('items/$itemId').remove();
+        await FirebaseDatabase.instance
+            .ref('groups/$groupID/itemsID/$itemId')
+            .remove();
         debugPrint('Item deleted from Firebase: $itemId');
       } catch (e) {
         debugPrint('Failed to delete item from Firebase: $e');
