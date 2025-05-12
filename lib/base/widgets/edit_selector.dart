@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/type_items_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/upload_image_widget.dart';
@@ -52,9 +53,9 @@ class _EditSelectorState extends State<EditSelector> {
   }
 
   void _updateTypeList() {
-    List<String> itemsType =
-        AppItem().itemType[AppCategories().categoriesDBRaw[_selectedIndex]] ??
-            [];
+    List<String> itemsType = TypeItemsManager()
+            .itemTypes[AppCategories().categoriesDBRaw[_selectedIndex]] ??
+        [];
     // Do something with the items, for example, print them
     setState(() {
       dropTypeValueList = itemsType;

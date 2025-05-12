@@ -46,7 +46,7 @@ Future<void> main() async {
 
   ConnectivityService().setupConnectivityListener();
   SyncManager().initSync(); // Initialize sync manager
-  //TODO FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
+  //FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
 
   runApp(const MyApp());
 }

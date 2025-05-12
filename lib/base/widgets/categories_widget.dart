@@ -20,9 +20,9 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     var filteredItems =
         await AppCategories().getItemsByCategory(groupID, category);
     if (kDebugMode) {
-      filteredItems.forEach((item) {
+      for (var item in filteredItems) {
         debugPrint(item.key.toString());
-      });
+      }
     }
     return filteredItems;
   }
@@ -59,7 +59,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   @override
   void initState() {
     super.initState();
-    //TODO fix listener BoxManager().itemBox.listenable().addListener(_onItemsChanged);
+    BoxManager().itemBox.listenable().addListener(_onItemsChanged);
+    debugPrint(BoxManager().itemBox.values.elementAt(0).type.toString());
   }
 
   @override

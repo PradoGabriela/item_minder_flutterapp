@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/templates_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
 import 'package:random_string/random_string.dart';
@@ -47,13 +48,18 @@ class GroupManager {
       createdByDeviceId: DeviceId().getDeviceId(),
     );
     debugPrint(newGroup.groupID);
+
+    // Add the new group to the local box
     await BoxManager().groupBox.add(newGroup);
-    //SAVE HIVEBOX
 
     // Add the new group to Firebase
     await FirebaseGroupManager().addGroupToFirebase(newGroup);
     debugPrint(
         '✅ Group created: ${newGroup.groupName} (ID: ${newGroup.groupID})');
+
+    //add template items
+    TemplatesManager().addTemplateItemsToGroup(
+        groupID: newGroup.groupID, categoriesNames: newGroup.categoriesNames);
   }
 
   Future<String> createGroupID() async {
@@ -107,7 +113,7 @@ class GroupManager {
       groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
       groupToUpdate?.save();
       // Update the group in Firebase
-      await FirebaseGroupManager().updateListInGroupInFirebase(groupToUpdate!);
+      //await FirebaseGroupManager().updateListInGroupInFirebase(groupToUpdate!); //todo UPDATE IN ANOTHER FUNCTION
     } catch (e) {
       debugPrint('❌ Error adding item to group: $e');
     }
@@ -137,5 +143,52 @@ class GroupManager {
     } catch (e) {
       debugPrint('❌ Error removing item from group: $e');
     }
+  }
+
+  //get a group by its ID
+  AppGroup? getGroupByID(String groupID) {
+    try {
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+      return group;
+    } catch (e) {
+      debugPrint('❌ Error getting group by ID: $e');
+      return null;
+    }
+  }
+
+  //Add group from firebase
+  Future<void> addGroupFromFirebase(
+    AppGroup fireGroup,
+  ) async {
+    // Add the new group to the local box
+    await BoxManager().groupBox.add(fireGroup);
+  }
+
+  //Edit group from firebase
+  Future<void> editGroupFromFirebase(
+    String id,
+    AppGroup fireGroup,
+  ) async {
+    final group = getGroupByID(id);
+    if (group == null) {
+      throw Exception('Group not found');
+    }
+    AppGroup groupToEdit = BoxManager().groupBox.get(group.key)!;
+    groupToEdit.groupName = fireGroup.groupName;
+    groupToEdit.members = fireGroup.members;
+    groupToEdit.groupIconUrl = fireGroup.groupIconUrl;
+    groupToEdit.itemsID = fireGroup.itemsID;
+    //here i need to check if the item is in the group, if not i need to add it
+    //i hvae to edit the items here
+
+    groupToEdit.shoppingListID = fireGroup.shoppingListID;
+    groupToEdit.categoriesNames = fireGroup.categoriesNames;
+    groupToEdit.lastUpdatedDateString = fireGroup.lastUpdatedDateString;
+    groupToEdit.lastUpdatedBy = fireGroup.lastUpdatedBy;
+
+    groupToEdit.save();
   }
 }

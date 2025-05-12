@@ -74,13 +74,15 @@ class ItemManager {
 
       // Add to Hive box (assuming BoxManager().itemBox is a Hive Box)
       await BoxManager().itemBox.add(customItem);
+      debugPrint("Custom item key item added to box: ${customItem.key}");
       await GroupManager().addItemToGroup(groupID, customItem.key!);
-      FirebaseItemManager()
-          .addItemToFirebase(groupID, customItem); // Add to Firebase
+      FirebaseItemManager().addItemToFirebase(
+          groupID, customItem, customItem.key); // Add to Firebase
 
       if (kDebugMode) {
-        print("Custom item added: ${customItem.toString()}");
-        print(BoxManager().itemBox.values.toList());
+        print(
+            "Custom item added: ${customItem.toString()}, key: ${customItem.key}, itemType: ${customItem.type}, itemCategory: ${customItem.category}");
+        //print(BoxManager().itemBox.values.toList());
       }
     } catch (e) {
       if (kDebugMode) {

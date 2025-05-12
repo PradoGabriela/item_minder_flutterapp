@@ -22,11 +22,12 @@ class FirebaseItemManager {
   get firebaseDatabase => FirebaseDatabase.instance;
 
 // Add an item to Firebase
-  Future<void> addItemToFirebase(String groupID, AppItem item) async {
+  Future<void> addItemToFirebase(
+      String groupID, AppItem item, int itemKey) async {
     if (await ConnectivityService().isOnline) {
       try {
         await FirebaseDatabase.instance
-            .ref('groups/$groupID/itemsID/${item.key}')
+            .ref('groups/$groupID/itemsID/$itemKey')
             .set(
           {
             'id': item.key,

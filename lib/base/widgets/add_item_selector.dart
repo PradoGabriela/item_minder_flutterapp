@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/type_items_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 
@@ -43,9 +44,9 @@ class _AddItemSelectorState extends State<AddItemSelector> {
   }
 
   void _updateTypeList(dynamic passCategoryIndex) {
-    List<String> itemsType =
-        AppItem().itemType[AppCategories().categoriesDBRaw[_selectedIndex]] ??
-            [];
+    List<String> itemsType = TypeItemsManager()
+            .itemTypes[AppCategories().categoriesDBRaw[_selectedIndex]] ??
+        [];
     // Do something with the items, for example, print them
     setState(() {
       dropTypeValueList = itemsType;
@@ -61,7 +62,7 @@ class _AddItemSelectorState extends State<AddItemSelector> {
   final TextEditingController _minQuantityController = TextEditingController();
   final TextEditingController _maxQuantityController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  bool _isAutoadd = false;
+  bool _isAutoadd = true;
 
   void _submitForm(String groupID) {
     // Validate the form fields

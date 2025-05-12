@@ -1,5 +1,6 @@
 // This file defines the AppGroup class, which represents a group in the application.
 import 'package:hive/hive.dart';
+import 'package:item_minder_flutterapp/device_id.dart';
 
 part 'group.g.dart'; // This part directive allows for the code generation
 
@@ -56,4 +57,23 @@ class AppGroup extends HiveObject {
     required this.lastUpdatedDateString,
     required this.createdByDeviceId,
   });
+
+  static AppGroup fromJson(Map<String, dynamic> groupData) {
+    return AppGroup(
+      groupID: groupData['groupID'] ?? '',
+      groupName: groupData['groupName'] ?? '',
+      members: List<String>.from(groupData['members'] ?? []),
+      createdBy: groupData['createdBy'] ?? '',
+      groupIconUrl: groupData['groupIconUrl'] ?? '',
+      itemsID: List<int>.from(groupData['itemsID'] ?? []),
+      pendingSyncsID: List<int>.from(groupData['pendingSyncsID'] ?? []),
+      shoppingListID: List<int>.from(groupData['shoppingListID'] ?? []),
+      categoriesNames: List<String>.from(groupData['categoriesNames'] ?? []),
+      lastUpdatedBy: groupData['lastUpdatedBy'] ?? '',
+      lastUpdatedDateString:
+          groupData['lastUpdatedDateString'] ?? DateTime.now().toString(),
+      createdByDeviceId:
+          groupData['createdByDeviceId'] ?? DeviceId().getDeviceId(),
+    );
+  }
 }
