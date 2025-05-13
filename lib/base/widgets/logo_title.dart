@@ -8,8 +8,8 @@ class AppLogoTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return //Logo place Size 140x140 pixels, remember to fix pubspec.yaml to allow images
         Container(
-      height: 140,
-      width: 140,
+      height: 120,
+      width: 120,
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage(AppMedia().logoTop),

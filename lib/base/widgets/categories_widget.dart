@@ -60,7 +60,6 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   void initState() {
     super.initState();
     BoxManager().itemBox.listenable().addListener(_onItemsChanged);
-    debugPrint(BoxManager().itemBox.values.elementAt(0).type.toString());
   }
 
   @override
@@ -292,7 +291,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
 
   @override
   void dispose() {
-    //todo FixListener BoxManager().itemBox.listenable().removeListener(_onItemsChanged);
+    BoxManager().itemBox.listenable().removeListener(_onItemsChanged);
     super.dispose();
   }
 }

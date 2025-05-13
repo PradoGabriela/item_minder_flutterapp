@@ -1,10 +1,15 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/base/widgets/categories_widget.dart';
 import 'package:item_minder_flutterapp/base/widgets/group_card.dart';
+import 'package:item_minder_flutterapp/base/widgets/join_pop_widget.dart';
 
 class GroupsWidget extends StatefulWidget {
   const GroupsWidget({super.key});
@@ -14,22 +19,21 @@ class GroupsWidget extends StatefulWidget {
 }
 
 class _GroupsWidgetState extends State<GroupsWidget> {
-  final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
-    foregroundColor: Colors.white,
-    backgroundColor: AppStyles().getPrimaryColor(),
-    minimumSize: Size(100, 80),
-    shadowColor: Colors.black,
-    elevation: 4,
-    padding: EdgeInsets.symmetric(horizontal: 10),
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(18)),
-    ),
-  );
+  List<AppGroup> currentGroups = [];
+
+  void _onGroupChanged() {
+    setState(() {
+      currentGroups = GroupManager().getHiveGroups();
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    debugPrint(BoxManager().groupBox.toString());
+    _onGroupChanged();
+    BoxManager().groupBox.listenable().addListener(_onGroupChanged);
+    // debugPrint(BoxManager().groupBox.toString());
   }
 
   @override
@@ -58,7 +62,7 @@ class _GroupsWidgetState extends State<GroupsWidget> {
             elevation: 0,
             color: Colors.white,
             child: FutureBuilder<List<dynamic>>(
-              future: Future.value(GroupManager().getHiveGroups()),
+              future: Future.value(currentGroups),
               builder: (BuildContext context,
                   AsyncSnapshot<List<dynamic>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -121,12 +125,12 @@ class _GroupsWidgetState extends State<GroupsWidget> {
       children: [
         ElevatedButton(
             onPressed: () {
-              GroupManager().createGroup(
-                  "Family", "Gabriela", AppMedia().familyIcon, ["Bathroom"]);
+              GroupManager().createGroup("Family", "Gabriela",
+                  AppMedia().familyIcon, AppCategories().categoriesDB);
               debugPrint(BoxManager().groupBox.values.toString());
               debugPrint("Creating Group");
             },
-            style: raisedButtonStyle,
+            style: AppStyles().raisedButtonStyle,
             child: Column(
               children: [
                 Icon(
@@ -154,12 +158,9 @@ class _GroupsWidgetState extends State<GroupsWidget> {
         SizedBox(width: 14),
         ElevatedButton(
             onPressed: () {
-              BoxManager().clearAllBox();
-              FirebaseDatabase.instance
-                  .ref('/')
-                  .remove(); //TODO remember to cancel this
+              JoinCustomPopup.show(context: context);
             },
-            style: raisedButtonStyle,
+            style: AppStyles().raisedButtonStyle,
             child: Column(
               children: [
                 Icon(
@@ -178,5 +179,11 @@ class _GroupsWidgetState extends State<GroupsWidget> {
             )),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    BoxManager().groupBox.listenable().removeListener(_onGroupChanged);
+    super.dispose();
   }
 }

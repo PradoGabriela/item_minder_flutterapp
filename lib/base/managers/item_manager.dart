@@ -170,33 +170,46 @@ class ItemManager {
 
   Future<bool> removeItem(String groupID, AppItem item) async {
     try {
+      // Validate item key
       if (item.key == null) {
         if (kDebugMode) {
           print("Cannot remove item: Key is null");
         }
         return false;
       }
-      //check if the same grupID
+
+      // Check group ID match
       if (item.groupID != groupID) {
         if (kDebugMode) {
-          print("Item group ID mismatch: ${item.groupID} vs ${groupID}");
+          print("Item group ID mismatch: ${item.groupID} vs $groupID");
         }
-        return false; // Exit if group IDs do not match
+        return false;
       }
-      String tempKey = item.key.toString();
+
+      // Convert key to String safely
+      final tempKey = item.key;
+
+      // Delete from local storage
       await BoxManager().itemBox.delete(item.key!);
+
+      // Delete from Firebase
       await FirebaseItemManager()
-          .deleteItemFromFirebase(groupID, tempKey!); // Remove from Firebase
+          .deleteItemFromFirebase(groupID, tempKey.toString());
+
+      // Remove from group
+      await GroupManager().removeItemFromGroup(groupID, tempKey);
 
       if (kDebugMode) {
+        print("Item removed from Firebase: $tempKey");
         print("Item removed: ${item.toString()}");
       }
-      return true; // Success
+
+      return true;
     } catch (e) {
       if (kDebugMode) {
         print("Error removing item '${item.brandName}': $e");
       }
-      return false; // Failure
+      return false;
     }
   }
 

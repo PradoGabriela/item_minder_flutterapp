@@ -30,6 +30,10 @@ class FirebaseListeners {
           final existingGroup =
               myGroupManager.getGroupByID(event.snapshot.key!);
 
+          if (existingGroup == null) {
+            return;
+          }
+
           if (existingGroup != null) {
             var compareTo = existingGroup.lastUpdatedDateString
                 .toString()
@@ -44,7 +48,7 @@ class FirebaseListeners {
               myGroupManager.editGroupFromFirebase(
                   event.snapshot.key!, AppGroup.fromJson(groupData));
               debugPrint(
-                  '🔄 Group updated in local box: ${event.snapshot.key}, firebase group last date: ${groupData['lastUpdated']?.toString()} and hive box date ${existingGroup.lastUpdatedDateString}, compareT0 $compareTo');
+                  '🔄 Group updated in local box(Listener): ${event.snapshot.key}, firebase group last date: ${groupData['lastUpdated']?.toString()} and hive box date ${existingGroup.lastUpdatedDateString}, compareT0 $compareTo');
               return;
             } else {
               // Skip adding if it already exists and was not updated by another device
@@ -53,28 +57,59 @@ class FirebaseListeners {
               return;
             }
           }
-          // If the group doesn't exist, add it to the local box and add the items i
-          // to the group
-          final groupCratedFromFirebase = AppGroup.fromJson(groupData);
 
-          myGroupManager.addGroupFromFirebase(
-              groupCratedFromFirebase); // Use Firebase push ID as key
-        }
-        //after adding the group, add the items to the group
-        for (var itemID in groupData['itemsID']) {
-          //Create the item from the firebase data and add it to the local box
-          final itemSnapshot = await groupsRef
-              .child(groupData['groupID'])
-              .child("itemsID")
-              .child(itemID.toString())
-              .once();
+          // Handle items - CORRECTED APPROACH
+          if (groupData['itemsID'] != null) {
+            // If itemsID is a Map (key-value pairs)
+            if (groupData['itemsID'] is Map) {
+              // Get all item IDs (keys of the map)
+              final itemIDs = (groupData['itemsID'] as Map).keys.toList();
 
-          final itemData =
-              Map<String, dynamic>.from(itemSnapshot.snapshot.value as Map);
-          final item = AppItem.fromJson(itemData);
-          BoxManager().itemBox.add(item); // Use Firebase push ID as key
-          debugPrint(
-              '🆕 New item added to group: ${event.snapshot.key}, itemID: $itemID');
+              for (var itemID in itemIDs) {
+                try {
+                  final itemSnapshot = await groupsRef
+                      .child(groupData['groupID'].toString())
+                      .child("itemsID")
+                      .child(itemID.toString())
+                      .once();
+
+                  if (itemSnapshot.snapshot.value != null) {
+                    final itemData = Map<String, dynamic>.from(
+                        itemSnapshot.snapshot.value as Map);
+                    final item = AppItem.fromJson(itemData);
+                    BoxManager().itemBox.add(item);
+                    debugPrint(
+                        '🆕 New item added to group(Listener): ${event.snapshot.key}, itemID: $itemID');
+                  }
+                } catch (e) {
+                  debugPrint('❌ Error processing item $itemID: $e');
+                }
+              }
+            }
+            // If itemsID is a List
+            else if (groupData['itemsID'] is List) {
+              for (var itemID in groupData['itemsID']) {
+                try {
+                  final itemSnapshot = await groupsRef
+                      .child(groupData['groupID'].toString())
+                      .child("itemsID")
+                      .child(itemID.toString())
+                      .once();
+
+                  if (itemSnapshot.snapshot.value != null) {
+                    final itemData = Map<String, dynamic>.from(
+                        itemSnapshot.snapshot.value as Map);
+                    final item = AppItem.fromJson(itemData);
+                    BoxManager().itemBox.add(item);
+                    debugPrint(
+                        '🆕 New item added to group(Listener): ${event.snapshot.key}, itemID: $itemID');
+                  }
+                } catch (e) {
+                  debugPrint('❌ Error processing item $itemID: $e');
+                }
+              }
+            }
+          }
         }
       } catch (e) {
         debugPrint('❌ child_added error: $e');
@@ -87,9 +122,9 @@ class FirebaseListeners {
         final groupData =
             Map<String, dynamic>.from(event.snapshot.value as Map);
         if (groupData['createdByDeviceId']?.toString() != currentDeviceId) {
-          //chekc if the group already exists in the local box
           final existingGroup =
               GroupManager().getGroupByID(event.snapshot.key!);
+
           if (existingGroup != null) {
             var compareTo = existingGroup.lastUpdatedDateString
                 .toString()
@@ -97,75 +132,90 @@ class FirebaseListeners {
                 .compareTo(groupData['lastUpdatedDateString']
                     .toString()
                     .substring(0, 19));
+
             if (compareTo != 0) {
-              // Update the existing group if it was updated by another device
-              //check if the existing group has different itemIDs
-              if (existingGroup.itemsID != groupData['itemsID']) {
-                // Remove the items that are not in the new group to the local box
-                for (var itemID in existingGroup.itemsID) {
-                  if (!groupData['itemsID'].contains(itemID)) {
-                    await BoxManager().itemBox.delete(itemID);
-                    debugPrint(
-                        '🗑️ Item deleted from group(updating Group): ${event.snapshot.key}, itemID: $itemID');
-                  }
+              // Handle items - check if itemsID structure changed
+              final newItemsIDs = groupData['itemsID'] is Map
+                  ? (groupData['itemsID'] as Map).keys.toList()
+                  : List.from(groupData['itemsID'] ?? []);
+
+              final oldItemsIDs = existingGroup.itemsID;
+
+              // Remove items that are no longer in the group
+              for (var itemID in oldItemsIDs) {
+                if (!newItemsIDs.contains(itemID.toString())) {
+                  await BoxManager().itemBox.delete(itemID);
+                  debugPrint(
+                      '🗑️ Item deleted from group(updating Group): ${event.snapshot.key}, itemID: $itemID');
                 }
-                // Add the new items to the group to the local box
-                for (var itemID in groupData['itemsID']) {
-                  if (!existingGroup.itemsID.contains(itemID)) {
+              }
+
+              // Add new items to the group
+              for (var itemID in newItemsIDs) {
+                if (!oldItemsIDs.contains(itemID.toString())) {
+                  try {
                     final itemSnapshot = await groupsRef
-                        .child(groupData['groupID'])
+                        .child(groupData['groupID'].toString())
                         .child("itemsID")
                         .child(itemID.toString())
                         .once();
 
-                    final itemData = Map<String, dynamic>.from(
-                        itemSnapshot.snapshot.value as Map);
-                    final item = AppItem.fromJson(itemData);
-                    BoxManager()
-                        .itemBox
-                        .add(item); // Use Firebase push ID as key
-                    debugPrint(
-                        '🆕 New item added to group(Updating Group): ${event.snapshot.key}, itemID: $itemID');
+                    if (itemSnapshot.snapshot.value != null) {
+                      final itemData = Map<String, dynamic>.from(
+                          itemSnapshot.snapshot.value as Map);
+                      final item = AppItem.fromJson(itemData);
+                      BoxManager().itemBox.add(item);
+                      debugPrint(
+                          '🆕 New item added to group(Updating Group): ${event.snapshot.key}, itemID: $itemID');
+                    }
+                  } catch (e) {
+                    debugPrint('❌ Error adding new item $itemID: $e');
                   }
                 }
               }
-              //update the item in local box if the lastUpdated variable is different than the one in firebase
-              for (var itemID in groupData['itemsID']) {
-                final itemSnapshot = await groupsRef
-                    .child(groupData['groupID'])
-                    .child("itemsID")
-                    .child(itemID.toString())
-                    .once();
 
-                final itemData = Map<String, dynamic>.from(
-                    itemSnapshot.snapshot.value as Map);
-                //Check if the lastUpdated variable are not equal for the item
-                var compareTo = BoxManager()
-                    .itemBox
-                    .get(itemID)
-                    ?.lastUpdated
-                    .toString()
-                    .substring(0, 19)
-                    .compareTo(
-                        itemData['lastUpdated'].toString().substring(0, 19));
-                if (compareTo != 0) {
-                  final itemToUpdate = AppItem.fromJson(itemData);
-                  ItemManager().editItemFromFirebase(
-                      itemID, itemToUpdate); // Use Firebase push ID as key
+              // Update existing items if they changed
+              for (var itemID in newItemsIDs) {
+                try {
+                  final itemSnapshot = await groupsRef
+                      .child(groupData['groupID'].toString())
+                      .child("itemsID")
+                      .child(itemID.toString())
+                      .once();
+
+                  if (itemSnapshot.snapshot.value != null) {
+                    final itemData = Map<String, dynamic>.from(
+                        itemSnapshot.snapshot.value as Map);
+                    final localItem = BoxManager().itemBox.get(itemID);
+
+                    if (localItem != null) {
+                      var itemCompareTo = localItem.lastUpdated
+                          .toString()
+                          .substring(0, 19)
+                          .compareTo(itemData['lastUpdated']
+                              .toString()
+                              .substring(0, 19));
+
+                      if (itemCompareTo != 0) {
+                        final itemToUpdate = AppItem.fromJson(itemData);
+                        ItemManager()
+                            .editItemFromFirebase(itemID, itemToUpdate);
+                      }
+                    }
+                  }
+                } catch (e) {
+                  debugPrint('❌ Error updating item $itemID: $e');
                 }
               }
 
-              // Update the existing group in the local box
+              // Update the group itself
               GroupManager().editGroupFromFirebase(
                   event.snapshot.key!, AppGroup.fromJson(groupData));
               debugPrint(
-                  '🔄 Group updated in local box: ${event.snapshot.key}, firebase group last date: ${groupData['lastUpdated']?.toString()} and hive box date ${existingGroup.lastUpdatedDateString}, compareT0 $compareTo');
-              return;
+                  '🔄 Group updated in local box: ${event.snapshot.key}');
             } else {
-              // Skip adding if it already exists and was not updated by another device
               debugPrint(
                   'Group already exists in local box and was not updated by another device: ${event.snapshot.key}');
-              return;
             }
           }
         }
@@ -179,11 +229,31 @@ class FirebaseListeners {
       try {
         final groupKey = event.snapshot.key;
         if (groupKey != null) {
-          await BoxManager().groupBox.delete(int.parse(groupKey));
-          debugPrint('🗑️ Group deleted: $groupKey');
+          // First get the group from local storage to access its items
+          final groupToRemove = GroupManager().getGroupByID(groupKey);
+
+          if (groupToRemove != null) {
+            // Remove all items associated with this group
+            for (var itemID in groupToRemove.itemsID) {
+              try {
+                await BoxManager().itemBox.delete(itemID);
+                debugPrint('🗑️ Item deleted (via group removal): $itemID');
+              } catch (e) {
+                debugPrint('❌ Error deleting item $itemID: $e');
+              }
+            }
+
+            // Then remove the group itself
+            await BoxManager().groupBox.delete(int.parse(groupKey));
+            debugPrint(
+                '🗑️ Group deleted: $groupKey with ${groupToRemove.itemsID.length} items');
+          } else {
+            debugPrint('ℹ️ Group not found in local storage: $groupKey');
+          }
         }
       } catch (e) {
         debugPrint('❌ child_removed error: $e');
+        // Consider adding error reporting here
       }
     });
 

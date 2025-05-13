@@ -8,7 +8,7 @@ class AppTitleText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 40,
-      width: 340,
+      width: 300,
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage(AppMedia().logoText),

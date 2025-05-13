@@ -1,13 +1,10 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/pending_syncs.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
-import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/notification.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/shopping.dart';
 import 'package:item_minder_flutterapp/base/managers/sync_manager.dart';
-import 'package:item_minder_flutterapp/base/widgets/bottom_nav_bar.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
@@ -46,7 +43,7 @@ Future<void> main() async {
 
   ConnectivityService().setupConnectivityListener();
   SyncManager().initSync(); // Initialize sync manager
-  //FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
+  FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
 
   runApp(const MyApp());
 }

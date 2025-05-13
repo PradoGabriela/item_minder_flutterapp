@@ -1,8 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/snack_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/templates_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
@@ -138,8 +140,9 @@ class GroupManager {
       groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
       groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
       groupToUpdate?.save();
-      // Update the group in Firebase
-      await FirebaseGroupManager().updateListInGroupInFirebase(groupToUpdate!);
+      // Update the group in Firebase'
+      await FirebaseGroupManager().updateGroupLastUpdated(
+          groupID, DeviceId().getDeviceId(), DateTime.now().toString());
     } catch (e) {
       debugPrint('❌ Error removing item from group: $e');
     }
@@ -152,6 +155,7 @@ class GroupManager {
             (group) => group.groupID == groupID,
             orElse: () => throw Exception('Group not found'),
           );
+
       return group;
     } catch (e) {
       debugPrint('❌ Error getting group by ID: $e');
@@ -190,5 +194,54 @@ class GroupManager {
     groupToEdit.lastUpdatedBy = fireGroup.lastUpdatedBy;
 
     groupToEdit.save();
+  }
+
+  //joing a group, create and empy group in the hive box them get the info from the firebase
+  Future<bool> joinGroup(
+    String groupID,
+    String userName,
+    BuildContext context,
+  ) async {
+    try {
+      // Check if group exists locally
+      if (BoxManager().groupBox.values.any((g) => g.groupID == groupID)) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Group already exists')));
+        }
+        return false;
+      }
+
+      // Join group in Firebase
+      final newGroup = await FirebaseGroupManager().joinGroup(
+        groupID,
+        DeviceId().getDeviceId(),
+        userName,
+      );
+
+      if (newGroup == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Failed to join group')));
+        }
+        return false;
+      }
+
+      // Add to local storage
+      await BoxManager().groupBox.add(newGroup);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Successfully joined group')));
+      }
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error joining group: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error joining group')));
+      }
+      return false;
+    }
   }
 }

@@ -22,24 +22,28 @@ class _StarterScreenState extends State<StarterScreen> {
       drawer: const SideMenu(),
       bottomNavigationBar: BottomAppBar(
           color: AppStyles().getPrimaryColor(),
-          child:
-              Text("© Copyright 2025 - Gabriela Prado | All Rights Reserved ")),
+          child: Center(
+              child: Text(
+                  "© Copyright 2025 - Gabriela Prado | All Rights Reserved "))),
       body: SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.only(
               bottom: 16.0), // extra padding for safety with bottom bar
-          child: Column(
-            children: [
-              const Column(
-                children: [
-                  AppLogoTitle(),
-                  AppTitleText(),
-                ],
-              ),
-              const SizedBox(height: 14),
-              GroupsWidget(),
-            ],
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Column(
+                  children: [
+                    AppLogoTitle(),
+                    AppTitleText(),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                GroupsWidget(),
+              ],
+            ),
           ),
         ),
       ),

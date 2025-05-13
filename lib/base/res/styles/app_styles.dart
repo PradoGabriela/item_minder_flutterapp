@@ -53,6 +53,18 @@ class AppStyles {
     color: Colors.white,
   );
 
+  final ButtonStyle _raisedButtonStyleCustom = ElevatedButton.styleFrom(
+    foregroundColor: Colors.white,
+    backgroundColor: _primaryColor,
+    minimumSize: Size(100, 80),
+    shadowColor: Colors.black,
+    elevation: 4,
+    padding: EdgeInsets.symmetric(horizontal: 10),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(18)),
+    ),
+  );
+
   //Singleton instance
   static final AppStyles _instance = AppStyles._internal();
 
@@ -103,5 +115,9 @@ class AppStyles {
 
   TextStyle get buttonTextStyle {
     return buttonTexStyle;
+  }
+
+  ButtonStyle get raisedButtonStyle {
+    return _raisedButtonStyleCustom;
   }
 }

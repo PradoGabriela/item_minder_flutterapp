@@ -63,25 +63,101 @@ class FirebaseGroupManager {
     }
   }
 
-  //update group in firebase
-  Future<void> updateListInGroupInFirebase(AppGroup group) async {
+  //update only lastUpdatedDateString and LastUpdatedBy
+  Future<void> updateGroupLastUpdated(String groupId, String lastUpdatedBy,
+      String lastUpdatedDateString) async {
     if (await ConnectivityService().isOnline) {
       try {
-        await ref.child(group.groupID).update(
+        await ref.child(groupId).update(
           {
-            'itemsID': group.itemsID,
-            'pendingSyncsID': group.pendingSyncsID,
-            'shoppingListID': group.shoppingListID,
-            'lastUpdatedBy': group.lastUpdatedBy,
-            'lastUpdatedDateString': group.lastUpdatedDateString,
+            'lastUpdatedBy': lastUpdatedBy,
+            'lastUpdatedDateString': lastUpdatedDateString,
           },
         );
-        debugPrint('✅ Group updated in Firebase: ${group.groupName}');
+        debugPrint('✅ Group last updated in Firebase: $groupId');
       } catch (e) {
-        debugPrint('❌ Firebase Group update failed: $e');
+        debugPrint('❌ Firebase Group last updated failed: $e');
       }
     } else {
-      debugPrint('❌ No internet connection. Cannot update group in Firebase.');
+      debugPrint(
+          '❌ No internet connection. Cannot update group last updated in Firebase.');
+    }
+  }
+
+  //Join a group
+  Future<AppGroup?> joinGroup(
+    String groupId,
+    String deviceId,
+    String newMember,
+  ) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection');
+      return null;
+    }
+
+    try {
+      final groupFound = await ref.child(groupId).get();
+      if (!groupFound.exists) {
+        debugPrint('❌ Group not found');
+        return null;
+      }
+
+      final groupData =
+          Map<String, dynamic>.from(groupFound.value as Map<dynamic, dynamic>);
+
+      final members = List<String>.from(groupData['members'] ?? []);
+      if (!members.contains(newMember)) {
+        members.add(newMember);
+      }
+
+      await ref.child(groupId).update({
+        'members': members,
+        'lastUpdatedBy': deviceId,
+        'lastUpdatedDateString': DateTime.now().toString(),
+      });
+
+      final updatedGroup = await ref.child(groupId).get();
+      final itemsMap =
+          updatedGroup.child('itemsID').value as Map<dynamic, dynamic>?;
+
+      final foundItemsID = itemsMap?.keys
+              .map((key) => int.tryParse(key.toString()))
+              .where((id) => id != null)
+              .cast<int>()
+              .toList() ??
+          [];
+      ;
+      //create a group object from the data
+      final group = AppGroup(
+        groupID: updatedGroup.child('groupID').value as String,
+        groupName: updatedGroup.child('groupName').value as String,
+        createdBy: updatedGroup.child('createdBy').value as String,
+        members: List<String>.from(updatedGroup.child('members').value),
+        groupIconUrl: updatedGroup.child('groupIconUrl').value as String,
+        itemsID: foundItemsID,
+        pendingSyncsID:
+            (updatedGroup.child('pendingSyncsID').value as List<dynamic>?)
+                    ?.map((e) => int.tryParse(e.toString()) ?? 0)
+                    .toList() ??
+                [],
+        shoppingListID:
+            (updatedGroup.child('shoppingListID').value as List<dynamic>?)
+                    ?.map((e) => int.tryParse(e.toString()) ?? 0)
+                    .toList() ??
+                [],
+        categoriesNames:
+            List<String>.from(updatedGroup.child('categoriesNames').value),
+        lastUpdatedBy: updatedGroup.child('lastUpdatedBy').value as String,
+        lastUpdatedDateString:
+            updatedGroup.child('lastUpdatedDateString').value as String,
+        createdByDeviceId:
+            updatedGroup.child('createdByDeviceId').value as String,
+      );
+
+      return group;
+    } catch (e) {
+      debugPrint('❌ Failed to join group: $e');
+      return null;
     }
   }
 }

@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
 
 class FirebaseItemManager {
@@ -86,6 +87,9 @@ class FirebaseItemManager {
           },
         );
         debugPrint('Item updated in Firebase: ${item.type}');
+        //update the group
+        FirebaseGroupManager().updateGroupLastUpdated(
+            groupID, item.lastUpdatedBy, item.lastUpdated.toString());
       } catch (e) {
         debugPrint('Failed to update item in Firebase: $e');
       }
