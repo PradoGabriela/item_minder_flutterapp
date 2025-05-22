@@ -22,7 +22,7 @@ class AppGroupAdapter extends TypeAdapter<AppGroup> {
       members: (fields[2] as List).cast<String>(),
       createdBy: fields[3] as String,
       groupIconUrl: fields[4] as String,
-      itemsID: (fields[5] as List).cast<int>(),
+      itemsID: (fields[5] as List).cast<String>(),
       pendingSyncsID: (fields[6] as List).cast<int>(),
       shoppingListID: (fields[7] as List).cast<int>(),
       categoriesNames: (fields[8] as List).cast<String>(),

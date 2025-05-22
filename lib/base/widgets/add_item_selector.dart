@@ -101,6 +101,7 @@ class _AddItemSelectorState extends State<AddItemSelector> {
         minQuantity: minQuantity,
         maxQuantity: maxQuantity,
         isAutoadd: isAutoadd,
+        itemID: "", // Pass an empty string for itemID
       );
 
       // Print values (simulate saving to a database)

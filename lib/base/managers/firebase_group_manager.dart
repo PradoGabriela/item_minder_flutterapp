@@ -120,12 +120,8 @@ class FirebaseGroupManager {
       final itemsMap =
           updatedGroup.child('itemsID').value as Map<dynamic, dynamic>?;
 
-      final foundItemsID = itemsMap?.keys
-              .map((key) => int.tryParse(key.toString()))
-              .where((id) => id != null)
-              .cast<int>()
-              .toList() ??
-          [];
+      final foundItemsID =
+          itemsMap?.keys.map((key) => key.toString()).toList() ?? [];
       ;
       //create a group object from the data
       final group = AppGroup(

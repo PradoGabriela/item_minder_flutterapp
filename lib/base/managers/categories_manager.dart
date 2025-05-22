@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
 
@@ -31,27 +32,39 @@ class AppCategories {
         .firstWhere((group) => group.groupID == groupID);
 
     var boxGroupItemsID = BoxManager().groupBox.get(currentGroup.key)?.itemsID;
+    debugPrint("Group ID: $groupID");
+    debugPrint("Items ID(${boxGroupItemsID?.length}): $boxGroupItemsID");
 
     if (boxGroupItemsID == null) {
       debugPrint("No items found in the group box for group ID: $groupID");
       return []; // Return an empty list if no items found
     }
-    var itemsTofilter = [];
+    List<AppItem> itemsTofilter = [];
     for (var i = 0; i < boxGroupItemsID.length; i++) {
-      //Get the item from the itembox
-      var item = BoxManager().itemBox.get(boxGroupItemsID[i]);
+      //Find the item key by it id
+      final tempItem = BoxManager().itemBox.values.firstWhere((item) {
+        return item.itemID == boxGroupItemsID[i];
+      });
+
+      AppItem? item = BoxManager().itemBox.get(tempItem.key);
+      debugPrint("Item In the box from that group: $item ");
 
       if (item != null) {
         itemsTofilter.add(item);
+        debugPrint(
+            "Item found: ${item.type} Category: ${item.category}"); //TODO delete
       } else {
         // Handle the case where the item is not found in the box
         debugPrint("Item with ID ${boxGroupItemsID[i]} not found in item box.");
       }
     }
-    var filteredItems = itemsTofilter.where((item) {
+    List<AppItem> filteredItems = itemsTofilter.where((item) {
+      debugPrint("Filtering woth this category: $category");
       return item.category == category;
     }).toList();
 
+    debugPrint(
+        "Items found in category $category: ${filteredItems.length}, filtered items: ${filteredItems[1].type}");
     return filteredItems;
   }
 }

@@ -24,14 +24,13 @@ class FirebaseItemManager {
 
 // Add an item to Firebase
   Future<void> addItemToFirebase(
-      String groupID, AppItem item, int itemKey) async {
+      String groupID, AppItem item, String itemID) async {
     if (await ConnectivityService().isOnline) {
       try {
         await FirebaseDatabase.instance
-            .ref('groups/$groupID/itemsID/$itemKey')
+            .ref('groups/$groupID/itemsID/$itemID')
             .set(
           {
-            'id': item.key,
             'brandName': item.brandName,
             'description': item.description,
             'iconUrl': item.iconUrl,
@@ -47,9 +46,10 @@ class FirebaseItemManager {
             'lastUpdated': DateTime.now().toString(),
             'lastUpdatedBy': item.lastUpdatedBy,
             'groupID': groupID,
+            'itemID': itemID,
           },
         );
-        debugPrint('✅ Item added to Firebase: ${item.type} (ID: ${item.key})');
+        debugPrint('✅ Item added to Firebase: ${item.type} (ID: $itemID)');
       } catch (e) {
         debugPrint('❌ Firebase write failed: $e');
       }
@@ -61,16 +61,15 @@ class FirebaseItemManager {
   }
 
   Future<void> updateItemInFirebase(
-      String groupID, AppItem item, dynamic itemKey) async {
+      String groupID, AppItem item, String itemID) async {
     // Update an item in Firebase
     // Implement the logic to update the item in Firebase
     if (await ConnectivityService().isOnline) {
       try {
         await FirebaseDatabase.instance
-            .ref('groups/$groupID/itemsID/$itemKey')
+            .ref('groups/$groupID/itemsID/$itemID')
             .update(
           {
-            'id': '$itemKey',
             'brandName': item.brandName,
             'description': item.description,
             'iconUrl': item.iconUrl,
@@ -118,18 +117,18 @@ class FirebaseItemManager {
     }
   }
 
-  Future<bool> isItemInFirebase(String groupID, String itemId) async {
+  Future<bool> isItemInFirebase(String groupID, String itemID) async {
     // Check if an item exists in Firebase
 
     try {
       final snapshot = await FirebaseDatabase.instance
-          .ref('groups/$groupID/itemsID/$itemId')
+          .ref('groups/$groupID/itemsID/$itemID')
           .once();
       if (snapshot.snapshot.value != null) {
-        debugPrint('Item exists in Firebase: $itemId');
+        debugPrint('Item exists in Firebase: $itemID');
         return true;
       } else {
-        debugPrint('Item does not exist in Firebase: $itemId');
+        debugPrint('Item does not exist in Firebase: $itemID');
         return false;
       }
     } catch (e) {
@@ -138,26 +137,26 @@ class FirebaseItemManager {
     }
   }
 
-  Future<void> deleteItemFromFirebase(String groupID, String itemId) async {
+  Future<void> deleteItemFromFirebase(String groupID, String itemID) async {
     // Delete an item from Firebase
     if (await ConnectivityService().isOnline) {
       try {
         await FirebaseDatabase.instance
-            .ref('groups/$groupID/itemsID/$itemId')
+            .ref('groups/$groupID/itemsID/$itemID')
             .remove();
-        debugPrint('Item deleted from Firebase: $itemId');
+        debugPrint('Item deleted from Firebase: $itemID');
       } catch (e) {
         debugPrint('Failed to delete item from Firebase: $e');
       }
     } else {
       // If offline, add the item to pending remove syncs
       BoxManager().pendingSyncsBox.get(0)?.pendingItems.removeWhere(
-          (pendingItem) => pendingItem.key == itemId); // Remove old item
+          (pendingItem) => pendingItem.key == itemID); // Remove old item
       BoxManager()
           .pendingSyncsBox
           .get(0)
           ?.pendingItemsToRemove
-          .add(int.parse(itemId));
+          .add(int.parse(itemID));
       BoxManager().pendingSyncsBox.get(0)?.save();
       debugPrint('No internet connection. Item added to pending syncs.');
     }

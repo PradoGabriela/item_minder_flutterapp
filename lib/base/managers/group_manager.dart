@@ -98,7 +98,7 @@ class GroupManager {
   //add an item to the group with the groupID
   Future<void> addItemToGroup(
     String groupID,
-    int itemID,
+    String itemID,
   ) async {
     try {
       // Find the group by ID
@@ -110,7 +110,9 @@ class GroupManager {
       // Add the item ID to the group's itemsID list
       final groupToUpdate =
           BoxManager().groupBox.get(group.key); // Get the group from Hive
-      groupToUpdate?.itemsID.add(itemID);
+      if (groupToUpdate != null && !groupToUpdate.itemsID.contains(itemID)) {
+        groupToUpdate.itemsID.add(itemID);
+      }
       groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
       groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
       groupToUpdate?.save();
@@ -124,7 +126,7 @@ class GroupManager {
   //remove an item from the group with the groupID
   Future<void> removeItemFromGroup(
     String groupID,
-    int itemID,
+    String itemID,
   ) async {
     try {
       // Find the group by ID

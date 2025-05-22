@@ -23,7 +23,7 @@ class AppGroup extends HiveObject {
 
 //Adding all the boxes to the group
   @HiveField(5)
-  List<int> itemsID;
+  List<String> itemsID;
 
   @HiveField(6)
   List<int> pendingSyncsID;
@@ -65,7 +65,7 @@ class AppGroup extends HiveObject {
       members: List<String>.from(groupData['members'] ?? []),
       createdBy: groupData['createdBy'] ?? '',
       groupIconUrl: groupData['groupIconUrl'] ?? '',
-      itemsID: List<int>.from(groupData['itemsID'] ?? []),
+      itemsID: List<String>.from(groupData['itemsID'] ?? []),
       pendingSyncsID: List<int>.from(groupData['pendingSyncsID'] ?? []),
       shoppingListID: List<int>.from(groupData['shoppingListID'] ?? []),
       categoriesNames: List<String>.from(groupData['categoriesNames'] ?? []),

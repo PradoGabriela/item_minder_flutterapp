@@ -37,6 +37,7 @@ class TemplatesManager {
           maxQuantity: defaultMaxQuantity,
           isAutoadd: true,
           groupID: groupID,
+          itemID: "",
         );
       }
     }

@@ -50,6 +50,9 @@ class AppItem extends HiveObject {
   @HiveField(14)
   String groupID = ""; // Default group ID is an empty string
 
+  @HiveField(15)
+  String itemID = ""; // Default item ID is an empty string
+
   AppItem(); // Constructor for AppItem class
   AppItem.custom(
     this.brandName,
@@ -66,6 +69,7 @@ class AppItem extends HiveObject {
     this.lastUpdated,
     this.lastUpdatedBy,
     this.groupID,
+    this.itemID,
   ); // Custom constructor for AppItem class
   AppItem.customWithDate(
       this.brandName,
@@ -80,7 +84,8 @@ class AppItem extends HiveObject {
       this.maxQuantity,
       this.lastUpdatedBy,
       this.isAutoAdd,
-      this.groupID);
+      this.groupID,
+      this.itemID);
 
   static fromJson(jsonData) {
     // Convert JSON data to AppItem object
@@ -99,6 +104,7 @@ class AppItem extends HiveObject {
       DateTime.parse(jsonData['lastUpdated'] ?? DateTime.now().toString()),
       jsonData['lastUpdatedBy'] ?? DeviceId().getDeviceId(),
       jsonData['groupID'] ?? "no id provided",
+      jsonData['itemID'] ?? "",
     );
   }
 

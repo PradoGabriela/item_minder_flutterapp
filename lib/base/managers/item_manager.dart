@@ -6,6 +6,7 @@ import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
+import 'package:random_string/random_string.dart';
 
 class ItemManager {
   static final ItemManager _instance = ItemManager._internal();
@@ -23,29 +24,20 @@ class ItemManager {
     print(currentItems.toString());
   }
 
-  void addItem(Box<AppItem> box) async {
-    // Add a new AppItem to the list and box
-    AppItem newItem = AppItem();
-    box.add(newItem); // Add the new item to the Hive box
-    if (kDebugMode) {
-      print("Item added: ${newItem.toString()}"); // Print the added item
-    }
-  }
-
-  Future<void> addCustomItem({
-    String? brandName,
-    String? description,
-    required String iconUrl,
-    required String imageUrl,
-    required String category,
-    required double price,
-    required String type,
-    required int quantity,
-    required int minQuantity,
-    required int maxQuantity,
-    required bool isAutoadd,
-    required String groupID,
-  }) async {
+  Future<void> addCustomItem(
+      {String? brandName,
+      String? description,
+      required String iconUrl,
+      required String imageUrl,
+      required String category,
+      required double price,
+      required String type,
+      required int quantity,
+      required int minQuantity,
+      required int maxQuantity,
+      required bool isAutoadd,
+      required String groupID,
+      required String itemID}) async {
     try {
       // Set default values if null/empty
       brandName =
@@ -54,7 +46,9 @@ class ItemManager {
       description = description?.trim().isEmpty ?? true
           ? "No Description Provided"
           : description!;
-
+      if (itemID.isEmpty || itemID == null || itemID == "") {
+        itemID = await createItemID(groupID);
+      }
       final customItem = AppItem.custom(
         brandName,
         description,
@@ -70,18 +64,19 @@ class ItemManager {
         DateTime.now(), // Set last updated date to now
         DeviceId().getDeviceId(), // Set last updated by to device ID
         groupID,
+        itemID,
       );
 
       // Add to Hive box (assuming BoxManager().itemBox is a Hive Box)
       await BoxManager().itemBox.add(customItem);
-      debugPrint("Custom item key item added to box: ${customItem.key}");
-      await GroupManager().addItemToGroup(groupID, customItem.key!);
-      FirebaseItemManager().addItemToFirebase(
-          groupID, customItem, customItem.key); // Add to Firebase
+      debugPrint("Custom item key item added to box ID: ${customItem.itemID}");
+      await GroupManager().addItemToGroup(groupID, itemID);
+      FirebaseItemManager()
+          .addItemToFirebase(groupID, customItem, itemID); // Add to Firebase
 
       if (kDebugMode) {
         print(
-            "Custom item added: ${customItem.toString()}, key: ${customItem.key}, itemType: ${customItem.type}, itemCategory: ${customItem.category}");
+            "Custom item added: ${customItem.toString()}, key: ${customItem.itemID}, itemType: ${customItem.type}, itemCategory: ${customItem.category}");
         //print(BoxManager().itemBox.values.toList());
       }
     } catch (e) {
@@ -126,8 +121,8 @@ class ItemManager {
 
       // Save changes (assuming Hive or similar key-value store)
       await BoxManager().itemBox.put(item.key, item);
-      FirebaseItemManager()
-          .updateItemInFirebase(groupID, item, item.key); // Update in Firebase
+      FirebaseItemManager().updateItemInFirebase(
+          groupID, item, item.itemID); // Update in Firebase
 
       if (kDebugMode) {
         print("Item updated: ${item.toString()}");
@@ -140,7 +135,12 @@ class ItemManager {
     }
   }
 
-  Future<void> editItemFromFirebase(int id, AppItem fireItem) async {
+  Future<void> editItemFromFirebase(String itemID, AppItem fireItem) async {
+    // Find the item in the local box using the itemID
+    final id = BoxManager().itemBox.values.firstWhere(
+          (item) => item.itemID == itemID,
+          orElse: () => throw Exception('Item not found'),
+        );
     AppItem itemToEdit = BoxManager().itemBox.get(id)!;
     //check if the same grupID
     if (itemToEdit.groupID != fireItem.groupID) {
@@ -187,27 +187,26 @@ class ItemManager {
       }
 
       // Convert key to String safely
-      final tempKey = item.key;
+      final tempID = item.itemID;
 
       // Delete from local storage
       await BoxManager().itemBox.delete(item.key!);
 
       // Delete from Firebase
-      await FirebaseItemManager()
-          .deleteItemFromFirebase(groupID, tempKey.toString());
+      await FirebaseItemManager().deleteItemFromFirebase(groupID, tempID);
 
       // Remove from group
-      await GroupManager().removeItemFromGroup(groupID, tempKey);
+      await GroupManager().removeItemFromGroup(groupID, tempID);
 
       if (kDebugMode) {
-        print("Item removed from Firebase: $tempKey");
-        print("Item removed: ${item.toString()}");
+        print("Item removed from Firebase: $tempID");
+        print("Item removed: ${item.type.toString()}");
       }
 
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print("Error removing item '${item.brandName}': $e");
+        print("Error removing item '${item.type}': $e");
       }
       return false;
     }
@@ -228,5 +227,19 @@ class ItemManager {
   void showAllCategories() {
     print(
         "Available categories: ${Categories.values}"); //Fix string to toggle Categories. and check if can i sue directly on widgets
+  }
+
+  createItemID(String groupID) async {
+    // Create a unique item ID
+    String itemID = groupID + randomAlphaNumeric(8);
+    // Check if the item ID already exists in the group
+    final group = BoxManager().groupBox.values.firstWhere(
+          (group) => group.groupID == groupID,
+          orElse: () => throw Exception('Group not found'),
+        );
+    while (group.itemsID.contains(itemID)) {
+      itemID = groupID + randomAlphaNumeric(8);
+    }
+    return itemID; // Return the unique item ID
   }
 }
