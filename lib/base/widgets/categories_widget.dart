@@ -28,17 +28,17 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   }
 
   int _selectedIndex = 0;
-  int _maxIndex = AppCategories().categoriesDB.length - 1;
+  late int _maxIndex;
 
   //List of categories to be displayed in the dropdown menu
-  List<String> dropValueList = AppCategories().categoriesDB;
+  List<String>? dropValueList;
   String dropdownValue = "";
   int _dropSelectedIndex = 0;
 
   void _onCategorySwipped(int index) {
     setState(() {
       _selectedIndex = index;
-      dropdownValue = dropValueList[index];
+      dropdownValue = dropValueList![index];
       if (kDebugMode) {
         print('Selected index $_selectedIndex');
         print('DropVAlue $dropdownValue');
@@ -57,8 +57,13 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   }
 
   @override
+  @override
   void initState() {
     super.initState();
+    dropValueList =
+        AppCategories().currentGroupCategories(widget.currentGroupId);
+    _maxIndex = dropValueList!.length - 1;
+    dropdownValue = dropValueList!.isNotEmpty ? dropValueList!.first : "";
     BoxManager().itemBox.listenable().addListener(_onItemsChanged);
   }
 
@@ -103,9 +108,9 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
             height: 60,
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               DropdownButton<String>(
-                value: dropValueList.contains(dropdownValue)
+                value: dropValueList!.contains(dropdownValue)
                     ? dropdownValue
-                    : dropValueList.first, // Ensure value is valid
+                    : dropValueList?.first, // Ensure value is valid
                 icon: const Icon(Icons.arrow_drop_down_circle_rounded),
                 iconEnabledColor: AppStyles().getPrimaryColor(),
                 iconSize: 32,
@@ -119,7 +124,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                 style: AppStyles().catTitleStyle.copyWith(color: Colors.white),
                 //isExpanded: true, // This makes the dropdown take full width
                 selectedItemBuilder: (BuildContext context) {
-                  return dropValueList.map<Widget>((String item) {
+                  return (dropValueList ?? []).map<Widget>((String item) {
                     return Center(
                       child: Text(
                         item.replaceFirst(item[0], item[0].toUpperCase()),
@@ -135,7 +140,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                     dropdownValue = value!;
 
                     _dropSelectedIndex =
-                        _dropSelectedIndex = dropValueList.indexOf(value);
+                        _dropSelectedIndex = dropValueList!.indexOf(value);
 
                     _selectedIndex = _dropSelectedIndex;
 
@@ -145,8 +150,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                     }
                   });
                 },
-                items:
-                    dropValueList.map<DropdownMenuItem<String>>((String value) {
+                items: dropValueList
+                    ?.map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(
@@ -176,8 +181,6 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                     AsyncSnapshot<List<dynamic>> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator(); // Show a loading indicator while waiting
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
@@ -215,6 +218,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                         )
                       ],
                     );
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
                   } else {
                     // Display the first item's string representation
                     return GridView.builder(
@@ -228,6 +233,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                               crossAxisCount: 3),
                       itemCount: snapshot.data!.length + 1,
                       itemBuilder: (context, index) {
+                        // Check if the data is empty
+
                         // Return widget for each grid item
                         // Check if this is the last index
                         if (index == snapshot.data!.length) {

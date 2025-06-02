@@ -1,5 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
@@ -8,6 +11,7 @@ import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/categories_widget.dart';
+import 'package:item_minder_flutterapp/base/widgets/create_group_popup.dart';
 import 'package:item_minder_flutterapp/base/widgets/group_card.dart';
 import 'package:item_minder_flutterapp/base/widgets/join_pop_widget.dart';
 
@@ -96,11 +100,51 @@ class _GroupsWidgetState extends State<GroupsWidget> {
                               horizontal: 24, vertical: 14),
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, index) {
-                            return GroupCard(
-                              groupId: snapshot.data![index].groupID,
-                              groupName: snapshot.data![index].groupName,
-                              groupIconUrl: snapshot.data![index].groupIconUrl,
-                              members: snapshot.data![index].members,
+                            return Slidable(
+                              key: ValueKey(snapshot.data![index].groupID),
+                              endActionPane: ActionPane(
+                                motion: const ScrollMotion(),
+                                children: [
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      // TODO: Implement Edit logic
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Edit ${snapshot.data![index].groupName}')),
+                                      );
+                                    },
+                                    foregroundColor: Colors.black,
+                                    icon:
+                                        FluentSystemIcons.ic_fluent_edit_filled,
+                                    label: "Edit",
+                                  ),
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      GroupManager().leaveGroup(
+                                          snapshot.data![index].groupID);
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Deleted ${snapshot.data![index].groupName}')),
+                                      );
+                                    },
+                                    foregroundColor: Colors.red,
+                                    icon: FluentSystemIcons
+                                        .ic_fluent_delete_forever_filled,
+                                    label: 'Delete',
+                                  ),
+                                ],
+                              ),
+                              child: GroupCard(
+                                groupId: snapshot.data![index].groupID,
+                                groupName: snapshot.data![index].groupName,
+                                groupIconUrl:
+                                    snapshot.data![index].groupIconUrl,
+                                members: snapshot.data![index].members,
+                              ),
                             );
                           },
                         ),
@@ -125,9 +169,7 @@ class _GroupsWidgetState extends State<GroupsWidget> {
       children: [
         ElevatedButton(
             onPressed: () {
-              GroupManager().createGroup("Family", "Gabriela",
-                  AppMedia().familyIcon, AppCategories().categoriesDB);
-              debugPrint(BoxManager().groupBox.values.toString());
+              CreateGroupPopup.show(context: context);
               debugPrint("Creating Group");
             },
             style: AppStyles().raisedButtonStyle,

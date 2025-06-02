@@ -4,6 +4,39 @@ import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
 
 class AppCategories {
+  Map<Categories, String> categoryEmojis = {
+    Categories.bathroom: "🛁",
+    Categories.bedroom: "🛏️",
+    Categories.kitchen: "🍽️",
+    Categories.laundryroom: "🧺",
+    Categories.pets: "🐾",
+    Categories.livingroom: "🛋️",
+    Categories.pantry: "🥫",
+    Categories.office: "💼",
+    Categories.outdoor: "🌳",
+    Categories.storage: "📦",
+    Categories.diningroom: "🍴",
+    Categories.garage: "🚗",
+    Categories.nursery: "🍼",
+    Categories.playroom: "🧸",
+    Categories.gym: "🏋️",
+    Categories.studyroom: "📚",
+    Categories.garden: "🌱",
+    Categories.carmaintenance: "🔧",
+    Categories.kidsschool: "🎒",
+    Categories.medicines: "💊",
+    Categories.cleaningsupplies: "🧼",
+    Categories.other: "📁",
+  };
+
+// Convert a string to a Categories enum value
+  Categories? categoryFromString(String value) {
+    return Categories.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => Categories.other,
+    );
+  }
+
   final List<Categories> _categoriesDB = Categories.values.toList();
   String textToTrim = "Categories.";
 
@@ -15,6 +48,22 @@ class AppCategories {
       myCategories.add(tempCategory);
     }
     return myCategories;
+  }
+
+  List<String>? currentGroupCategories(String groupID) {
+    var currentGroup = BoxManager()
+        .groupBox
+        .values
+        .firstWhere((group) => group.groupID == groupID);
+
+    List<String>? boxGroupsCategories =
+        BoxManager().groupBox.get(currentGroup.key)?.categoriesNames;
+    if (boxGroupsCategories == null) {
+      debugPrint("No categories in the group box for group ID: $groupID");
+      return null; // Return an empty list if no items found
+    }
+
+    return boxGroupsCategories;
   }
 
   List<Categories> get categoriesDBRaw {

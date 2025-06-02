@@ -27,7 +27,7 @@ class GroupManager {
   }
 
   //create a new group
-  Future<void> createGroup(
+  Future<bool> createGroup(
     String groupName,
     String createdBy,
     String groupIconUrl,
@@ -35,6 +35,10 @@ class GroupManager {
   ) async {
     debugPrint('✅ Starting to create');
     String newID = await createGroupID();
+    //check if categoriesNames is empty, if so, set it to default categories
+    if (categoriesNames.isEmpty) {
+      categoriesNames = ['Other'];
+    }
     var newGroup = AppGroup(
       groupID: newID,
       groupName: groupName,
@@ -62,6 +66,7 @@ class GroupManager {
     //add template items
     TemplatesManager().addTemplateItemsToGroup(
         groupID: newGroup.groupID, categoriesNames: newGroup.categoriesNames);
+    return true;
   }
 
   Future<String> createGroupID() async {
@@ -212,31 +217,31 @@ class GroupManager {
               .showSnackBar(SnackBar(content: Text('Group already exists')));
         }
         return false;
-      }
+      } else {
+        // Join group in Firebase
+        final newGroup = await FirebaseGroupManager().joinGroup(
+          groupID,
+          DeviceId().getDeviceId(),
+          userName,
+        );
 
-      // Join group in Firebase
-      final newGroup = await FirebaseGroupManager().joinGroup(
-        groupID,
-        DeviceId().getDeviceId(),
-        userName,
-      );
-
-      if (newGroup == null) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Failed to join group')));
+        if (newGroup == null) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('Failed to join group')));
+          }
+          return false;
         }
-        return false;
-      }
 
-      // Add to local storage
-      await BoxManager().groupBox.add(newGroup);
+        // Add to local storage
+        await BoxManager().groupBox.add(newGroup);
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Successfully joined group')));
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Successfully joined group')));
+        }
+        return true;
       }
-      return true;
     } catch (e) {
       debugPrint('❌ Error joining group: $e');
       if (context.mounted) {
@@ -244,6 +249,28 @@ class GroupManager {
             .showSnackBar(SnackBar(content: Text('Error joining group')));
       }
       return false;
+    }
+  }
+
+  //leave a group, remove the group from the hive box and firebase
+  Future<void> leaveGroup(
+    String groupID,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+      String groupName = group.groupName;
+      // Remove the group from Hive
+      await BoxManager().groupBox.delete(group.key);
+      debugPrint('✅ Group removed from Hive: $groupName');
+
+      // Remove the group from Firebase
+      await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+    } catch (e) {
+      debugPrint('❌ Error leaving group: $e');
     }
   }
 }
