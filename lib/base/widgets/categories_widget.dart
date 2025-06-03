@@ -22,6 +22,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     if (kDebugMode) {
       for (var item in filteredItems) {
         debugPrint(item.key.toString());
+        debugPrint(item.type.toString());
+        debugPrint('item quantity ${item.quantity.toString()}');
       }
     }
     return filteredItems;
@@ -65,6 +67,13 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     _maxIndex = dropValueList!.length - 1;
     dropdownValue = dropValueList!.isNotEmpty ? dropValueList!.first : "";
     BoxManager().itemBox.listenable().addListener(_onItemsChanged);
+    if (kDebugMode) {
+      print(
+          'CategoriesWidget initialized with group ID: ${widget.currentGroupId}');
+      print('Available categories: $dropValueList');
+      print('Initial selected index $_selectedIndex');
+      print('Initial dropdown value $dropdownValue');
+    }
   }
 
   @override
@@ -173,10 +182,8 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
 
               child: FutureBuilder<List<dynamic>>(
                 // Use the FutureBuilder to handle asynchronous data fetching
-                future: getFilteredItems(
-                    widget.currentGroupId,
-                    AppCategories().categoriesDB[
-                        _selectedIndex]), // Provide your asynchronous method here
+                future: getFilteredItems(widget.currentGroupId,
+                    dropdownValue), // Provide your asynchronous method here
                 builder: (BuildContext context,
                     AsyncSnapshot<List<dynamic>> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -200,7 +207,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                               MaterialPageRoute(
                                 builder: (context) => AddItemScreen(
                                     currentCategory: AppCategories()
-                                        .categoriesDBRaw[_selectedIndex],
+                                        .categoryFromString(dropdownValue)!,
                                     currentGroupId: widget.currentGroupId),
                               ),
                             ).then((_) {
@@ -257,7 +264,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                                     MaterialPageRoute(
                                       builder: (context) => AddItemScreen(
                                         currentCategory: AppCategories()
-                                            .categoriesDBRaw[_selectedIndex],
+                                            .categoryFromString(dropdownValue)!,
                                         currentGroupId: widget.currentGroupId,
                                       ),
                                     ),
