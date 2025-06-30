@@ -16,15 +16,19 @@ class AppShoppingAdapter extends TypeAdapter<AppShopping> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return AppShopping()..items = (fields[0] as List).cast<AppItem>();
+    return AppShopping(
+      groupID: fields[1] as String,
+    )..items = (fields[0] as List).cast<AppItem>();
   }
 
   @override
   void write(BinaryWriter writer, AppShopping obj) {
     writer
-      ..writeByte(1)
+      ..writeByte(2)
       ..writeByte(0)
-      ..write(obj.items);
+      ..write(obj.items)
+      ..writeByte(1)
+      ..write(obj.groupID);
   }
 
   @override

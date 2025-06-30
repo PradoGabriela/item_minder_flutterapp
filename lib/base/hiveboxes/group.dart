@@ -26,22 +26,22 @@ class AppGroup extends HiveObject {
   List<String> itemsID;
 
   @HiveField(6)
-  List<int> pendingSyncsID;
-
-  @HiveField(7)
   List<int> shoppingListID;
 
-  @HiveField(8)
+  @HiveField(7)
   List<String> categoriesNames;
 
-  @HiveField(9)
+  @HiveField(8)
   String lastUpdatedBy;
 
-  @HiveField(10)
+  @HiveField(9)
   String lastUpdatedDateString;
 
-  @HiveField(11)
+  @HiveField(10)
   String createdByDeviceId;
+
+  @HiveField(11)
+  bool isOnline = false;
 
   AppGroup({
     required this.groupID,
@@ -50,12 +50,12 @@ class AppGroup extends HiveObject {
     required this.createdBy,
     required this.groupIconUrl,
     required this.itemsID,
-    required this.pendingSyncsID,
     required this.shoppingListID,
     required this.categoriesNames,
     required this.lastUpdatedBy,
     required this.lastUpdatedDateString,
     required this.createdByDeviceId,
+    required isOnline,
   });
 
   static AppGroup fromJson(Map<String, dynamic> groupData) {
@@ -66,7 +66,6 @@ class AppGroup extends HiveObject {
       createdBy: groupData['createdBy'] ?? '',
       groupIconUrl: groupData['groupIconUrl'] ?? '',
       itemsID: List<String>.from(groupData['itemsID'] ?? []),
-      pendingSyncsID: List<int>.from(groupData['pendingSyncsID'] ?? []),
       shoppingListID: List<int>.from(groupData['shoppingListID'] ?? []),
       categoriesNames: List<String>.from(groupData['categoriesNames'] ?? []),
       lastUpdatedBy: groupData['lastUpdatedBy'] ?? '',
@@ -74,6 +73,7 @@ class AppGroup extends HiveObject {
           groupData['lastUpdatedDateString'] ?? DateTime.now().toString(),
       createdByDeviceId:
           groupData['createdByDeviceId'] ?? DeviceId().getDeviceId(),
+      isOnline: groupData['isOnline'] ?? false,
     );
   }
 }

@@ -135,6 +135,27 @@ class ItemManager {
     }
   }
 
+  //Edit only item quantity
+  Future<void> editItemQuantity(AppItem item, int quantity) async {
+    if (quantity != null) item.quantity = quantity;
+    item.lastUpdated = DateTime.now();
+    item.lastUpdatedBy = DeviceId().getDeviceId();
+    item.save();
+    try {
+      // Update in Firebase
+      await FirebaseItemManager()
+          .updateItemInFirebase(item.groupID, item, item.itemID);
+
+      if (kDebugMode) {
+        print("Item quantity updated: ${item.toString()}");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to update item quantity: $e");
+      }
+    }
+  }
+
   Future<void> editItemFromFirebase(String itemID, AppItem fireItem) async {
     // Find the item in the local box using the itemID
     final id = BoxManager().itemBox.values.firstWhere(

@@ -30,7 +30,7 @@ class _ItemCardState extends State<ItemCard> {
         boxShadow: const [
           BoxShadow(
             color: Color.fromARGB(89, 116, 114, 114), // Shadow color adjustment
-            offset: Offset(5, 5), // Position the shadow to the right and bottom
+            offset: Offset(3, 3), // Position the shadow to the right and bottom
             blurRadius: 1, // Control the blur effect
           ),
         ],
@@ -78,9 +78,24 @@ class _ItemCardState extends State<ItemCard> {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text(widget.itemType,
+                        SizedBox(
+                          height: constraints.maxHeight *
+                              0.05, // 5% of the parent's height
+                        ),
+                        Text(
+                            widget.itemType[0].toUpperCase() +
+                                widget.itemType.substring(1),
                             style: AppStyles().titleStyle,
                             textAlign: TextAlign.center),
+                        Text(
+                          (widget.myItem.brandName != null &&
+                                  widget.myItem.brandName !=
+                                      "No Brand Provided")
+                              ? widget.myItem.brandName
+                              : "",
+                          style: AppStyles().titleStyle.copyWith(
+                              fontWeight: FontWeight.normal, fontSize: 12),
+                        ),
                         Container(
                           height: constraints.maxHeight *
                               0.5, // 50% of the parent's height
@@ -96,7 +111,8 @@ class _ItemCardState extends State<ItemCard> {
                           ),
                         ),
                         SizedBox(
-                          height: 28,
+                          height: constraints.maxHeight *
+                              0.2, // 5% of the parent's height
                           child: AppBottomButtons(passItem: widget.myItem),
                         )
                       ],

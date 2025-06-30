@@ -9,7 +9,8 @@ import 'package:item_minder_flutterapp/base/widgets/logo_title.dart';
 import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final String groupId;
+  const ProfileScreen({super.key, required this.groupId});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -59,7 +60,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(width: 10),
                 FutureBuilder<List<AppItem>>(
-                  future: ShoppingManager().getShoppingList(),
+                  future: ShoppingManager().getShoppingList(
+                      widget.groupId), // Fetch shopping items for the group
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Text(

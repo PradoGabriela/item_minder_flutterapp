@@ -25,9 +25,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
     appScreens = [
       const StarterScreen(),
       HomeScreen(groupId: widget.currentGroupId),
-      const ShoppingListScreen(),
+      ShoppingListScreen(currentGroupID: widget.currentGroupId),
       const CalendarScreen(),
-      const ProfileScreen(),
+      ProfileScreen(groupId: widget.currentGroupId),
     ];
   }
 

@@ -94,6 +94,7 @@ class CreateGroupPopup {
                               RegExp(r'[a-zA-Z0-9]')),
                           FilteringTextInputFormatter.deny(RegExp(r'\s')),
                         ],
+                        maxLength: 12,
                       ),
                       SizedBox(height: 20),
                       //User Name field
@@ -109,6 +110,7 @@ class CreateGroupPopup {
                               RegExp(r'[a-zA-Z0-9]')),
                           FilteringTextInputFormatter.deny(RegExp(r'\s')),
                         ],
+                        maxLength: 12,
                       ),
                       SizedBox(height: 20),
                       Row(
@@ -221,7 +223,8 @@ class CreateGroupPopup {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "$emoji $category",
+                                    "$emoji $category".replaceFirst(
+                                        category[0], category[0].toUpperCase()),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 16,

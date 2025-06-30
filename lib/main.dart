@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
-import 'package:item_minder_flutterapp/base/hiveboxes/pending_syncs.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/notification.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/shopping.dart';
-import 'package:item_minder_flutterapp/base/managers/sync_manager.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
@@ -21,14 +19,13 @@ Future<void> main() async {
   Hive.registerAdapter(AppItemAdapter());
   Hive.registerAdapter(AppNotificationAdapter());
   Hive.registerAdapter(AppShoppingAdapter());
-  Hive.registerAdapter(PendingSyncsAdapter());
   Hive.registerAdapter(AppGroupAdapter());
 
   NotificationManager().initializeNotifications();
   NotificationManager().checkNotificationPermission();
 
   await BoxManager().openBoxes();
-  //todo ShoppingManager().initShoppingList(); // Initialize the shopping list
+
   // Check if Firebase is already initialized
 
   // Safe initialization
@@ -42,7 +39,6 @@ Future<void> main() async {
   }
 
   ConnectivityService().setupConnectivityListener();
-  SyncManager().initSync(); // Initialize sync manager
   FirebaseListeners().setupFirebaseListeners(); // Setup Firebase listeners
 
   runApp(const MyApp());

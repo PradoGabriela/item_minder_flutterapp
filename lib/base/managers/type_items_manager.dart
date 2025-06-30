@@ -24,7 +24,7 @@ class TypeItemsManager {
       "wipes",
       "cotton swabs",
       "cotton pads",
-      "toilet cleaner disks",
+      "toilet disks",
       "air freshener",
     ],
     Categories.livingroom: ["deodorizer", "bulbs", "decorative items"],

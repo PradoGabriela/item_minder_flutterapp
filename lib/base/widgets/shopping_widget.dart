@@ -7,7 +7,8 @@ import 'package:item_minder_flutterapp/base/widgets/bottom_buttons.dart';
 import 'package:item_minder_flutterapp/screens/add_item_screen.dart';
 
 class ShoppingWidget extends StatefulWidget {
-  const ShoppingWidget({super.key});
+  final String currentGroupID;
+  const ShoppingWidget({super.key, required this.currentGroupID});
 
   @override
   State<ShoppingWidget> createState() => _ShoppingWidgetState();
@@ -17,9 +18,11 @@ class _ShoppingWidgetState extends State<ShoppingWidget> {
   List<AppItem> shoppingItems = [];
   Future<List<AppItem>> getShoppingItemsByCategory(String category) async {
     if (category == "All" || category.isEmpty) {
-      return ShoppingManager().getShoppingList();
+      return ShoppingManager().getShoppingList(
+          widget.currentGroupID); // Fetch all items for the group
     } else {
-      List<AppItem> allItems = await ShoppingManager().getShoppingList();
+      List<AppItem> allItems =
+          await ShoppingManager().getShoppingList(widget.currentGroupID);
 
       return allItems.where((item) => item.category == category).toList();
     }

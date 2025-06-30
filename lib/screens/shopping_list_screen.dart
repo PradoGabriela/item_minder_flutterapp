@@ -6,16 +6,17 @@ import 'package:item_minder_flutterapp/base/widgets/shopping_widget.dart';
 import 'package:item_minder_flutterapp/base/widgets/title_text.dart';
 
 class ShoppingListScreen extends StatelessWidget {
-  const ShoppingListScreen({super.key});
+  final String currentGroupID;
+  const ShoppingListScreen({super.key, required this.currentGroupID});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: HomeAppBar(),
+    return Scaffold(
+      appBar: const HomeAppBar(),
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          Column(
+          const Column(
             children: [
               AppLogoTitle(), // Logo widget
               AppTitleText(), // Logo widget text
@@ -24,8 +25,9 @@ class ShoppingListScreen extends StatelessWidget {
 
           // Add an Expanded widget to the ShoppingWidget so it gets its space properly
           Expanded(
-            child:
-                ShoppingWidget(), // This will handle scrolling for your ShoppingWidget
+            child: ShoppingWidget(
+                currentGroupID:
+                    currentGroupID), // This will handle scrolling for your ShoppingWidget
           ),
         ],
       ),

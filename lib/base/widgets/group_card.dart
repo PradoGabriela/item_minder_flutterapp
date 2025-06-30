@@ -7,6 +7,7 @@ class GroupCard extends StatefulWidget {
   final String groupName;
   final String groupIconUrl;
   final List<String> members;
+  final bool status;
 
   const GroupCard({
     super.key,
@@ -14,6 +15,7 @@ class GroupCard extends StatefulWidget {
     required this.groupName,
     required this.groupIconUrl,
     required this.members,
+    required this.status,
   });
 
   @override
@@ -44,7 +46,7 @@ class _GroupCardState extends State<GroupCard> {
               24), // Use the same border radius as the Card
         ),
         child: InkResponse(
-          onLongPress: () {
+          onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -82,6 +84,12 @@ class _GroupCardState extends State<GroupCard> {
                           color: Colors.black,
                         )),
                     Text('Members: ${widget.members.join(', ')}'),
+                    SizedBox(height: 4),
+                    Text(
+                      widget.status ? " Online" : "Offline",
+                      style: TextStyle(
+                          fontSize: 12), //TODO ADD EMOJI ONLINE AND OFFLINE
+                    ),
                   ],
                 ),
               ],

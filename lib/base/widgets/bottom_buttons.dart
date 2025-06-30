@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
@@ -18,14 +19,17 @@ class _AppBottomButtonsState extends State<AppBottomButtons> {
       if (item.quantity <= 0) {
         return;
       }
-      item.quantity--;
+      int newQuantity = item.quantity - 1;
+      ItemManager().editItemQuantity(item, newQuantity);
+      //TODO: update in firebas database
 
-      if (item.quantity == item.minQuantity) {
+      if (newQuantity == item.minQuantity) {
         NotificationManager()
             .newMinNotification(item.type.toString()); //Push notification
         if (item.isAutoAdd) {
           //Add to shopping list
-          ShoppingManager().addShoppingItem(item: item); //Add to shopping list
+          ShoppingManager().addShoppingItem(
+              item: item, groupID: item.groupID); //Add to shopping list
         }
         //If is autoadd add to shopping list
         if (kDebugMode) {
@@ -41,8 +45,10 @@ class _AppBottomButtonsState extends State<AppBottomButtons> {
 
   void _incrementQuantity(dynamic item) {
     setState(() {
-      item.quantity++;
-      if (item.quantity == item.maxQuantity) {
+      int newQuantity = item.quantity + 1;
+      ItemManager().editItemQuantity(item, newQuantity);
+
+      if (newQuantity == item.maxQuantity) {
         NotificationManager().newMAxNotification(
             item.type.toString()); //Push notification max quantity reached
 

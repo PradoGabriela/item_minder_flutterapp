@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/snack_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/templates_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
@@ -46,12 +47,13 @@ class GroupManager {
       members: [createdBy],
       groupIconUrl: groupIconUrl,
       itemsID: [],
-      pendingSyncsID: [],
       shoppingListID: [],
       categoriesNames: categoriesNames,
       lastUpdatedBy: DeviceId().getDeviceId(),
       lastUpdatedDateString: DateTime.now().toString(),
       createdByDeviceId: DeviceId().getDeviceId(),
+      //When creating the group, is goiung to be always offlibe first
+      isOnline: false,
     );
     debugPrint(newGroup.groupID);
 
@@ -66,6 +68,10 @@ class GroupManager {
     //add template items
     TemplatesManager().addTemplateItemsToGroup(
         groupID: newGroup.groupID, categoriesNames: newGroup.categoriesNames);
+
+    //init shopping list for that group
+    await ShoppingManager()
+        .initShoppingList(newGroup.groupID); // Initialize the shopping list
     return true;
   }
 

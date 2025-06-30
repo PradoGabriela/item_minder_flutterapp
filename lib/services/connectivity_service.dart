@@ -1,6 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:item_minder_flutterapp/base/managers/sync_manager.dart';
 
 class ConnectivityService {
   static final ConnectivityService _instance = ConnectivityService._internal();

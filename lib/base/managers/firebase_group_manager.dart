@@ -28,12 +28,12 @@ class FirebaseGroupManager {
           'members': group.members,
           'groupIconUrl': group.groupIconUrl,
           'itemsID': group.itemsID,
-          'pendingSyncsID': group.pendingSyncsID,
           'shoppingListID': group.shoppingListID,
           'categoriesNames': group.categoriesNames,
           'lastUpdatedBy': group.lastUpdatedBy,
           'lastUpdatedDateString': group.lastUpdatedDateString,
           'createdByDeviceId': group.createdByDeviceId,
+          'isOnline': group.isOnline,
         },
       );
     } catch (e) {
@@ -131,11 +131,6 @@ class FirebaseGroupManager {
         members: List<String>.from(updatedGroup.child('members').value),
         groupIconUrl: updatedGroup.child('groupIconUrl').value as String,
         itemsID: foundItemsID,
-        pendingSyncsID:
-            (updatedGroup.child('pendingSyncsID').value as List<dynamic>?)
-                    ?.map((e) => int.tryParse(e.toString()) ?? 0)
-                    .toList() ??
-                [],
         shoppingListID:
             (updatedGroup.child('shoppingListID').value as List<dynamic>?)
                     ?.map((e) => int.tryParse(e.toString()) ?? 0)
@@ -148,6 +143,7 @@ class FirebaseGroupManager {
             updatedGroup.child('lastUpdatedDateString').value as String,
         createdByDeviceId:
             updatedGroup.child('createdByDeviceId').value as String,
+        isOnline: updatedGroup.child('isOnline').value as bool? ?? false,
       );
 
       return group;

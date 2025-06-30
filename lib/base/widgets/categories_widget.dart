@@ -186,9 +186,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                     dropdownValue), // Provide your asynchronous method here
                 builder: (BuildContext context,
                     AsyncSnapshot<List<dynamic>> snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator(); // Show a loading indicator while waiting
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -234,9 +232,9 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
                       padding: EdgeInsets.only(bottom: 80),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisSpacing: 10,
+                              crossAxisSpacing: 8,
                               mainAxisSpacing: 10,
-                              childAspectRatio: 0.7,
+                              childAspectRatio: 0.67,
                               crossAxisCount: 3),
                       itemCount: snapshot.data!.length + 1,
                       itemBuilder: (context, index) {

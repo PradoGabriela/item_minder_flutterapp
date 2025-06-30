@@ -23,6 +23,7 @@ class JoinCustomPopup {
             bool isLoading = false;
 
             return Dialog(
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20.0),
               ),
