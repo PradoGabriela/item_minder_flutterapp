@@ -7,8 +7,10 @@ import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/create_group_popup.dart';
+import 'package:item_minder_flutterapp/base/widgets/edit_group_popup.dart';
 import 'package:item_minder_flutterapp/base/widgets/group_card.dart';
-import 'package:item_minder_flutterapp/base/widgets/join_pop_widget.dart';
+import 'package:item_minder_flutterapp/base/widgets/join_popup_widget.dart';
+import 'package:item_minder_flutterapp/device_id.dart';
 
 class GroupsWidget extends StatefulWidget {
   const GroupsWidget({super.key});
@@ -19,6 +21,7 @@ class GroupsWidget extends StatefulWidget {
 
 class _GroupsWidgetState extends State<GroupsWidget> {
   List<AppGroup> currentGroups = [];
+  String currentDeviceId = DeviceId().getDeviceId();
 
   void _onGroupChanged() {
     setState(() {
@@ -101,12 +104,22 @@ class _GroupsWidgetState extends State<GroupsWidget> {
                                 children: [
                                   SlidableAction(
                                     onPressed: (context) {
-                                      // TODO: Implement Edit logic
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Edit ${snapshot.data![index].groupName}')),
+                                      //if is not the creator of the group(checking by device ID) it can not be edited
+                                      if (snapshot
+                                              .data![index].createdByDeviceId !=
+                                          currentDeviceId) {
+                                        print(currentDeviceId);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'You can not edit this group')),
+                                        );
+                                        return;
+                                      }
+                                      EditGroupPopup.show(
+                                        context,
+                                        snapshot.data![index],
                                       );
                                     },
                                     foregroundColor: Colors.black,

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:item_minder_flutterapp/base/managers/image_manager.dart';
-import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 
 class UploadImageWidget extends StatefulWidget {
   final dynamic passItem;
@@ -24,9 +23,8 @@ class _UploadImageWidgetState extends State<UploadImageWidget> {
   void _addNewImage(ImageSource source) async {
     await ImageManager.instance.pickImage(source, widget.passItem);
     setState(() {
-      widget.passItem.imageUrl =
+      _currentImage =
           ImageManager.instance.getImageByName(widget.passItem.imageUrl);
-      _currentImage = widget.passItem.imageUrl;
     });
   }
 

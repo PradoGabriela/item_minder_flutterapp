@@ -1,4 +1,3 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
@@ -20,6 +19,12 @@ class FirebaseGroupManager {
   // Add a group to Firebase
   Future<void> addGroupToFirebase(AppGroup group) async {
     try {
+      //check if the group already exists
+      final snapshot = await ref.child(group.groupID).once();
+      if (snapshot.snapshot.value != null) {
+        debugPrint('❌ Group already exists: ${group.groupID}');
+        return;
+      }
       await ref.child(group.groupID).set(
         {
           'groupID': group.groupID,
@@ -150,6 +155,67 @@ class FirebaseGroupManager {
     } catch (e) {
       debugPrint('❌ Failed to join group: $e');
       return null;
+    }
+  }
+
+  //Update group Status if is offline delete group from firebase database
+  Future<void> updateGroupStatusInFirebase(
+      AppGroup group, bool isOnline) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot update group status.');
+      return;
+    }
+
+    debugPrint('✅ Group status updated in Firebase: ${group.groupID}');
+
+    if (!isOnline) {
+      await ref.child(group.groupID).remove();
+      debugPrint('✅ Group deleted from Firebase: ${group.groupID}');
+    }
+    if (isOnline) {
+      try {
+        await addGroupToFirebase(group);
+      } catch (e) {
+        debugPrint('❌ Firebase Group creation failed: $e');
+      }
+    }
+  }
+
+  //Update group name in Firebase
+  Future<void> updateGroupNameInFirebase(
+      String groupId, String newGroupName) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot update group name.');
+      return;
+    }
+
+    try {
+      await ref.child(groupId).update({
+        'groupName': newGroupName,
+      });
+      debugPrint('✅ Group name updated in Firebase: $groupId');
+    } catch (e) {
+      debugPrint('❌ Firebase Group name update failed: $e');
+    }
+  }
+
+  //Update group icon URL in Firebase
+  Future<void> updateGroupIconUrlInFirebase(
+    String groupId,
+    String newGroupIconUrl,
+  ) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot update group icon URL.');
+      return;
+    }
+
+    try {
+      await ref.child(groupId).update({
+        'groupIconUrl': newGroupIconUrl,
+      });
+      debugPrint('✅ Group icon URL updated in Firebase: $groupId');
+    } catch (e) {
+      debugPrint('❌ Firebase Group icon URL update failed: $e');
     }
   }
 }

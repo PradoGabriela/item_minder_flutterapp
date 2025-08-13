@@ -279,4 +279,166 @@ class GroupManager {
       debugPrint('❌ Error leaving group: $e');
     }
   }
+
+  //delete member from group
+  Future<void> deleteMemberFromGroup(
+    String groupID,
+    String memberID,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Remove the member from the group's members list
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null && groupToUpdate.members.contains(memberID)) {
+        groupToUpdate.members.remove(memberID);
+        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
+        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
+        groupToUpdate.save();
+        // Update the group in Firebase
+        await FirebaseGroupManager().updateGroupLastUpdated(
+            groupID, DeviceId().getDeviceId(), DateTime.now().toString());
+      }
+    } catch (e) {
+      debugPrint('❌ Error deleting member from group: $e');
+    }
+  }
+
+  //change group status
+  Future<void> updateGroupStatus(
+    String groupID,
+    bool isOnline,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Update the group's status
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null) {
+        groupToUpdate.isOnline = isOnline;
+        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
+        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
+        groupToUpdate.save();
+        // Update the group in Firebase
+        await FirebaseGroupManager().updateGroupStatusInFirebase(
+          group,
+          isOnline,
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error updating group status: $e');
+    }
+  }
+
+  //UpdateGroupName
+  Future<void> updateGroupName(
+    String groupID,
+    String newGroupName,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Update the group's name
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null) {
+        groupToUpdate.groupName = newGroupName;
+        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
+        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
+        groupToUpdate.save();
+        // Update the group in Firebase
+        await FirebaseGroupManager().updateGroupNameInFirebase(
+          groupID,
+          newGroupName,
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error updating group name: $e');
+    }
+  }
+
+  //Update group img in hivebox and firebase
+  Future<void> updateGroupIconUrl(
+      String groupID, String newGroupIconUrl) async {
+    try {
+      // Update the group icon URL in Hive
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+      final groupToUpdate = BoxManager().groupBox.get(group.key);
+      if (groupToUpdate != null) {
+        groupToUpdate.groupIconUrl = newGroupIconUrl;
+        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
+        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
+        groupToUpdate.save();
+      }
+
+      // Update the group icon URL in Firebase
+      await FirebaseGroupManager().updateGroupIconUrlInFirebase(
+        groupID,
+        newGroupIconUrl,
+      );
+    } catch (e) {
+      debugPrint('❌ Error updating group icon URL: $e');
+    }
+  }
+
+  //Edit Base information Group, edit group imgURL, name, members and status
+  Future<void> editGroupBaseInfo(
+    String groupID,
+    String groupName,
+    String groupIconUrl,
+    List<String> membersToDelete,
+    bool isOnline,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Update the group's base information
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null) {
+        // Check if the group icon URL has changed
+        if (groupToUpdate.groupIconUrl != groupIconUrl) {
+          updateGroupIconUrl(groupID, groupIconUrl);
+        }
+
+        //Check if the groups members has changed
+        if (membersToDelete.isNotEmpty) {
+          for (var member in membersToDelete) {
+            deleteMemberFromGroup(groupID, member);
+          }
+        }
+        //Check if the group state have changed
+        if (groupToUpdate.isOnline != isOnline) {
+          updateGroupStatus(groupID, isOnline);
+        }
+        // Check if the group name has changed
+        if (groupToUpdate.groupName != groupName) {
+          updateGroupName(groupID, groupName);
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error editing group base info: $e');
+    }
+  }
 }

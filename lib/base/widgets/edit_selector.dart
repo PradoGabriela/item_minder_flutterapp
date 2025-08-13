@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/type_items_manager.dart';
@@ -78,7 +77,7 @@ class _EditSelectorState extends State<EditSelector> {
       String brandName = _brandNameController.text;
       String description = _descriptionController.text;
       String iconUrl = AppMedia().otherIcon; //Temporary icon o default
-      String imageUrl = AppMedia().otherIcon; //Temporary icon o default
+      //String imageUrl = AppMedia().otherIcon; //Temporary icon o default
       String category = dropdownValue; // Get the selected category
       String type = dropdownTypeValue; // Get the selected type
       double price = double.parse(_priceController.text);
@@ -107,7 +106,7 @@ class _EditSelectorState extends State<EditSelector> {
         brandName: brandName,
         description: description,
         iconUrl: AppMedia().getItemIcon(type.toLowerCase()),
-        imageUrl: imageUrl,
+        imageUrl: widget.passItem.imageUrl, // Keep the existing image URL
         category: category,
         price: price,
         type: type,
@@ -295,7 +294,7 @@ class _EditSelectorState extends State<EditSelector> {
                 ),
               ],
             ),
-            //type selector
+            //TYPE SELECTOR
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -371,7 +370,7 @@ class _EditSelectorState extends State<EditSelector> {
                   ),
                 ),
 
-                //Item Image
+                //ITEM IMAGE
                 const SizedBox(height: 10),
                 UploadImageWidget(
                     passItem: widget.passItem, isEditMode: _isEnabled),

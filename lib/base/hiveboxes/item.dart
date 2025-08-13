@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:item_minder_flutterapp/base/categories.dart';
-import 'package:item_minder_flutterapp/base/managers/type_items_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 

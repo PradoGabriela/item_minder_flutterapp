@@ -111,6 +111,7 @@ class ImageManager {
     savedPaths.add(savedImage.path);
     await prefs.setStringList('saved_images', savedPaths);
     item.imageUrl = fileName;
+    item.save(); // Save the item with the new image URL
     printFileList();
     // Debugging line to print the list of files
     return savedImage;
@@ -131,12 +132,17 @@ class ImageManager {
   }
 
   File? getImageByName(String imageName) {
+    if (imageName.isEmpty) {
+      debugPrint("Image name is empty, returning null.");
+      return null;
+    }
     try {
       final searchName = imageName.toLowerCase();
       File foundImage = _images.firstWhere(
         (file) => file.path.toLowerCase().contains(searchName),
         orElse: () => throw Exception('Image not found'),
       );
+      debugPrint("Found image: ${foundImage.path}, itemUrl $imageName");
       return foundImage;
     } catch (e) {
       debugPrint("Image not found: $imageName");

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/type_items_manager.dart';
