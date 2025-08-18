@@ -29,13 +29,14 @@ class AppGroupAdapter extends TypeAdapter<AppGroup> {
       lastUpdatedDateString: fields[9] as String,
       createdByDeviceId: fields[10] as String,
       isOnline: fields[11] as dynamic,
+      memberName: fields[12] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, AppGroup obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.groupID)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class AppGroupAdapter extends TypeAdapter<AppGroup> {
       ..writeByte(10)
       ..write(obj.createdByDeviceId)
       ..writeByte(11)
-      ..write(obj.isOnline);
+      ..write(obj.isOnline)
+      ..writeByte(12)
+      ..write(obj.memberName);
   }
 
   @override

@@ -313,14 +313,14 @@ class CreateGroupPopup {
 
                                     setState(() => isLoading = true);
                                     try {
-                                      success =
-                                          await GroupManager().createGroup(
-                                        groupName,
-                                        userName,
-                                        AppMedia()
-                                            .iconsGroupList[_selectedIcon],
-                                        selectedCategories,
-                                      );
+                                      success = await GroupManager()
+                                          .createGroup(
+                                              groupName,
+                                              userName,
+                                              AppMedia().iconsGroupList[
+                                                  _selectedIcon],
+                                              selectedCategories,
+                                              userName);
                                     } finally {
                                       if (context.mounted) {
                                         setState(() => isLoading = false);

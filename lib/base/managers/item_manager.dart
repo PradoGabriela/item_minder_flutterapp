@@ -46,7 +46,7 @@ class ItemManager {
       description = description?.trim().isEmpty ?? true
           ? "No Description Provided"
           : description!;
-      if (itemID.isEmpty || itemID == null || itemID == "") {
+      if (itemID.isEmpty || itemID == "") {
         itemID = await createItemID(groupID);
       }
       final customItem = AppItem.custom(
@@ -137,7 +137,7 @@ class ItemManager {
 
   //Edit only item quantity
   Future<void> editItemQuantity(AppItem item, int quantity) async {
-    if (quantity != null) item.quantity = quantity;
+    item.quantity = quantity;
     item.lastUpdated = DateTime.now();
     item.lastUpdatedBy = DeviceId().getDeviceId();
     item.save();
@@ -157,36 +157,51 @@ class ItemManager {
   }
 
   Future<void> editItemFromFirebase(String itemID, AppItem fireItem) async {
-    // Find the item in the local box using the itemID
-    final id = BoxManager().itemBox.values.firstWhere(
-          (item) => item.itemID == itemID,
-          orElse: () => throw Exception('Item not found'),
-        );
-    AppItem itemToEdit = BoxManager().itemBox.get(id)!;
-    //check if the same grupID
-    if (itemToEdit.groupID != fireItem.groupID) {
+    try {
+      // Find the item in the local box using the itemID
+      final existingItem = BoxManager().itemBox.values.firstWhere(
+            (item) => item.itemID == itemID,
+            orElse: () => throw Exception('Item not found'),
+          );
+
+      // Check if the same groupID
+      if (existingItem.groupID != fireItem.groupID) {
+        if (kDebugMode) {
+          print(
+              "Item group ID mismatch: ${existingItem.groupID} vs ${fireItem.groupID}");
+        }
+        return; // Exit if group IDs do not match
+      }
+
+      // Update all fields with Firebase data
+      existingItem.brandName = fireItem.brandName;
+      existingItem.description = fireItem.description;
+      existingItem.iconUrl = fireItem.iconUrl;
+      existingItem.imageUrl = fireItem.imageUrl;
+      existingItem.category = fireItem.category;
+      existingItem.price = fireItem.price;
+      existingItem.type = fireItem.type;
+      existingItem.quantity = fireItem.quantity;
+      existingItem.minQuantity = fireItem.minQuantity;
+      existingItem.maxQuantity = fireItem.maxQuantity;
+      existingItem.isAutoAdd = fireItem.isAutoAdd;
+      existingItem.addedDateString = fireItem.addedDateString;
+      existingItem.lastUpdated =
+          fireItem.lastUpdated; // Update last updated date
+      existingItem.lastUpdatedBy = fireItem.lastUpdatedBy;
+
+      // Save the changes to Hive
+      existingItem.save();
+
       if (kDebugMode) {
         print(
-            "Item group ID mismatch: ${itemToEdit.groupID} vs ${fireItem.groupID}");
+            "✅ Item updated from Firebase: ${existingItem.itemID} (${existingItem.type})");
       }
-      return; // Exit if group IDs do not match
+    } catch (e) {
+      if (kDebugMode) {
+        print("❌ Failed to update item from Firebase: $e");
+      }
     }
-    itemToEdit.brandName = fireItem.brandName;
-    itemToEdit.description = fireItem.description;
-    itemToEdit.iconUrl = fireItem.iconUrl;
-    itemToEdit.imageUrl = fireItem.imageUrl;
-    itemToEdit.category = fireItem.category;
-    itemToEdit.price = fireItem.price;
-    itemToEdit.type = fireItem.type;
-    itemToEdit.quantity = fireItem.quantity;
-    itemToEdit.minQuantity = fireItem.minQuantity;
-    itemToEdit.maxQuantity = fireItem.maxQuantity;
-    itemToEdit.isAutoAdd = fireItem.isAutoAdd;
-    itemToEdit.addedDateString = fireItem.addedDateString;
-    itemToEdit.lastUpdated = fireItem.lastUpdated; // Update last updated date
-    itemToEdit.lastUpdatedBy = fireItem.lastUpdatedBy;
-
-    itemToEdit.save();
   }
 
   Future<bool> removeItem(String groupID, AppItem item) async {
@@ -262,5 +277,131 @@ class ItemManager {
       itemID = groupID + randomAlphaNumeric(8);
     }
     return itemID; // Return the unique item ID
+  }
+
+  // ======================================================================
+  // FIREBASE LISTENER SUPPORT METHODS
+  // These methods provide controlled access to Hive storage for Firebase listeners
+  // without exposing direct BoxManager access
+  // ======================================================================
+
+  /**
+   * Finds an item in local storage by itemID
+   * Used by Firebase listeners to locate items for updates/comparisons
+   */
+  AppItem? findItemByID(String itemID) {
+    try {
+      // Search through all items in the box to find one with matching itemID
+      for (var item in BoxManager().itemBox.values) {
+        if (item.itemID == itemID) {
+          return item;
+        }
+      }
+      return null; // Item not found
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error finding item by ID: $e');
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Adds an item from Firebase data to local storage
+   * Used by Firebase listeners when syncing new items
+   */
+  Future<void> addItemFromFirebase(AppItem firebaseItem) async {
+    try {
+      await BoxManager().itemBox.add(firebaseItem);
+      if (kDebugMode) {
+        print(
+            '🆕 Item added from Firebase: ${firebaseItem.itemID} (${firebaseItem.type})');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Failed to add item from Firebase: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /**
+   * Removes an item from local storage by itemID
+   * Used by Firebase listeners when items are deleted from groups
+   */
+  Future<bool> removeItemByID(String itemID) async {
+    try {
+      final itemToDelete = findItemByID(itemID);
+      if (itemToDelete != null && itemToDelete.key != null) {
+        await BoxManager().itemBox.delete(itemToDelete.key!);
+        if (kDebugMode) {
+          print('🗑️ Item removed by ID: $itemID');
+        }
+        return true;
+      } else {
+        if (kDebugMode) {
+          print('⚠️ Item not found for deletion: $itemID');
+        }
+        return false;
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error removing item by ID: $e');
+      }
+      return false;
+    }
+  }
+
+  /**
+   * Removes multiple items from local storage by itemIDs
+   * Used by Firebase listeners when groups are deleted (cascade delete)
+   */
+  Future<void> removeItemsByIDs(List<String> itemIDs) async {
+    for (var itemID in itemIDs) {
+      try {
+        await removeItemByID(itemID);
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Error removing item $itemID during cascade delete: $e');
+        }
+      }
+    }
+  }
+
+  /**
+   * Determines if a local item should be updated with Firebase data
+   * Uses timestamp comparison to resolve conflicts
+   */
+  bool shouldUpdateItem(AppItem localItem, AppItem firebaseItem) {
+    try {
+      // Compare lastUpdated timestamps
+      var compareTo = localItem.lastUpdated
+          .toString()
+          .substring(0, 19)
+          .compareTo(firebaseItem.lastUpdated.toString().substring(0, 19));
+
+      // Returns true if local version is older (negative comparison result)
+      return compareTo < 0; // Local version is older, should update
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error comparing item timestamps: $e');
+      }
+      return false; // Fail-safe: don't update if comparison fails
+    }
+  }
+
+  /**
+   * Gets all items from local storage
+   * Used by Firebase listeners for bulk operations
+   */
+  List<AppItem> getAllItems() {
+    try {
+      return BoxManager().itemBox.values.toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error getting all items: $e');
+      }
+      return [];
+    }
   }
 }

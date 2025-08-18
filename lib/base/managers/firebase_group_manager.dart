@@ -1,6 +1,8 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
+import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
 
 class FirebaseGroupManager {
@@ -68,6 +70,11 @@ class FirebaseGroupManager {
     }
   }
 
+//Update deleted group form Firebase and them delete it fomr hivebox
+  Future<void> deletedGroupDetected(String groupId) async {
+    await GroupManager().removeGroupFromHiveBox(groupId);
+  }
+
   //update only lastUpdatedDateString and LastUpdatedBy
   Future<void> updateGroupLastUpdated(String groupId, String lastUpdatedBy,
       String lastUpdatedDateString) async {
@@ -90,7 +97,7 @@ class FirebaseGroupManager {
   }
 
   //Join a group
-  Future<AppGroup?> joinGroup(
+  Future<AppGroup?> joinGroupFromFirebase(
     String groupId,
     String deviceId,
     String newMember,
@@ -127,7 +134,6 @@ class FirebaseGroupManager {
 
       final foundItemsID =
           itemsMap?.keys.map((key) => key.toString()).toList() ?? [];
-      ;
       //create a group object from the data
       final group = AppGroup(
         groupID: updatedGroup.child('groupID').value as String,
@@ -149,6 +155,7 @@ class FirebaseGroupManager {
         createdByDeviceId:
             updatedGroup.child('createdByDeviceId').value as String,
         isOnline: updatedGroup.child('isOnline').value as bool? ?? false,
+        memberName: newMember,
       );
 
       return group;
@@ -181,19 +188,70 @@ class FirebaseGroupManager {
     }
   }
 
+  //remove member in firebase
+  Future<void> removeGroupMemberFromFirebase(String groupID, String memberID,
+      String lastUpdatedBy, String lastUpdatedDateString) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot remove group member.');
+      return;
+    }
+
+    try {
+      // Step 1: Get current group data
+      final groupSnapshot = await ref.child(groupID).get();
+      if (!groupSnapshot.exists) {
+        debugPrint('❌ Group not found in Firebase: $groupID');
+        return;
+      }
+
+      // Step 2: Extract current members list
+      final groupData = Map<String, dynamic>.from(groupSnapshot.value as Map);
+      List<String> currentMembers = [];
+
+      if (groupData['members'] != null) {
+        if (groupData['members'] is List) {
+          currentMembers = List<String>.from(groupData['members']);
+        } else if (groupData['members'] is Map) {
+          // Handle case where Firebase converts array to map
+          currentMembers = (groupData['members'] as Map)
+              .values
+              .map((value) => value.toString())
+              .toList();
+        }
+      }
+
+      // Step 3: Remove the member from the list
+      currentMembers.remove(memberID);
+
+      // Step 4: Update Firebase with the new members list
+      await ref.child(groupID).update({
+        'members': currentMembers,
+        'lastUpdatedBy': lastUpdatedBy,
+        'lastUpdatedDateString': lastUpdatedDateString,
+      });
+
+      debugPrint('✅ Group member removed from Firebase: $memberID');
+      debugPrint('   Remaining members: $currentMembers');
+    } catch (e) {
+      debugPrint('❌ Firebase Group member removal failed: $e');
+    }
+  }
+
   //Update group name in Firebase
   Future<void> updateGroupNameInFirebase(
-      String groupId, String newGroupName) async {
+      AppGroup passGroup, String newGroupName) async {
     if (!await ConnectivityService().isOnline) {
       debugPrint('❌ No internet connection. Cannot update group name.');
       return;
     }
 
     try {
-      await ref.child(groupId).update({
+      await ref.child(passGroup.groupID).update({
         'groupName': newGroupName,
+        'lastUpdatedBy': passGroup.lastUpdatedBy,
+        'lastUpdatedDateString': passGroup.lastUpdatedDateString,
       });
-      debugPrint('✅ Group name updated in Firebase: $groupId');
+      debugPrint('✅ Group name updated in Firebase: $passGroup');
     } catch (e) {
       debugPrint('❌ Firebase Group name update failed: $e');
     }
@@ -201,7 +259,7 @@ class FirebaseGroupManager {
 
   //Update group icon URL in Firebase
   Future<void> updateGroupIconUrlInFirebase(
-    String groupId,
+    AppGroup passGroup,
     String newGroupIconUrl,
   ) async {
     if (!await ConnectivityService().isOnline) {
@@ -210,12 +268,31 @@ class FirebaseGroupManager {
     }
 
     try {
-      await ref.child(groupId).update({
+      await ref.child(passGroup.groupID).update({
         'groupIconUrl': newGroupIconUrl,
+        'lastUpdatedBy': passGroup.lastUpdatedBy,
+        'lastUpdatedDateString': passGroup.lastUpdatedDateString,
       });
-      debugPrint('✅ Group icon URL updated in Firebase: $groupId');
+      debugPrint(
+          '✅ Group icon URL updated in Firebase: ${passGroup.groupIconUrl}');
     } catch (e) {
       debugPrint('❌ Firebase Group icon URL update failed: $e');
+    }
+  }
+
+//Add group member from Firebase
+  Future<void> addGroupMemberFromFirebase(String groupID, String memberID,
+      String lastUpdatedBy, String lastUpdatedDateString) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot add group member.');
+      return;
+    }
+
+    try {
+      await GroupManager().addMemberToGroup(
+          groupID, memberID, lastUpdatedBy, lastUpdatedDateString);
+    } catch (e) {
+      debugPrint('❌ Firebase Group member addition failed: $e');
     }
   }
 }

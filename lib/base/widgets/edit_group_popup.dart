@@ -108,19 +108,34 @@ class EditGroupPopup {
                       Wrap(
                         spacing: 8.0,
                         children: group.members.map((member) {
-                          return Chip(
-                            label: Text(member),
-                            //if the member name is same than createdBy it can not be deleted
-                            onDeleted: member == group.createdBy
+                          final isSelected = membersToDelete.contains(member);
+
+                          return FilterChip(
+                            label: Text(member == group.createdBy
+                                ? '$member 👑'
+                                //change for delete emoji
+                                : '$member ❌'),
+                            selected: isSelected,
+                            backgroundColor: Colors.grey[200],
+                            selectedColor: Colors.red[200],
+                            showCheckmark: false,
+                            onSelected: member == group.createdBy
                                 ? null
-                                : () {
+                                : (selected) {
                                     setState(() {
-                                      membersToDelete.add(member);
+                                      if (selected) {
+                                        membersToDelete.add(member);
+                                        //Change the label text adding trash emoji
+                                        member = '$member 🗑️';
+                                      } else {
+                                        membersToDelete.remove(member);
+                                      }
                                     });
                                   },
                           );
                         }).toList(),
                       ),
+
                       SizedBox(height: 20),
                       //change group status with switch button
                       Row(
@@ -149,6 +164,78 @@ class EditGroupPopup {
                                 onChanged: (value) {
                                   setState(() {
                                     newStatus = value;
+                                    if (newStatus) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text('Confirm'),
+                                            content: Text(
+                                              '⚠️ Are you sure you want to set the group status to online? 🟢\n\n'
+                                              'This means you won\'t be able to use offline mode anymore.',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    value = false;
+                                                    newStatus = false;
+                                                  });
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  setState(() {
+                                                    newStatus = true;
+                                                  });
+                                                },
+                                                child: Text('OK'),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    }
+                                    //if  the new status is false show a dialog for confirmation
+                                    if (!newStatus) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            title: Text('Confirm'),
+                                            content: Text(
+                                              '⚠️ Are you sure you want to set the group status to offline? 📴\n\n'
+                                              'This will remove all members 👥 from the group and delete it 🗑️ from the database.',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    value = true;
+                                                    newStatus = true;
+                                                  });
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                  setState(() {
+                                                    newStatus = false;
+                                                  });
+                                                },
+                                                child: Text('OK'),
+                                              ),
+                                            ],
+                                          );
+                                          //if newStatus is true show a dialog that says the group is going to become an online and the user wont be able to use offline anymore
+                                        },
+                                      );
+                                    }
                                   });
                                 },
                               ),

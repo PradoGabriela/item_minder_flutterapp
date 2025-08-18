@@ -41,4 +41,25 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Security - Sensitive Firebase files
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase_options.dart
+
+# Security - Signing and keys
+android/key.properties
+android/app/*.keystore
+*.p12
+*.mobileprovision
+
+# Security - Environment variables
+.env
+.env.*
+!.env.example
+
+# Security - Local configuration
+local.properties
+
+# IDE and tools
 .qodo

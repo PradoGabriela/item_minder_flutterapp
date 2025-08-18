@@ -102,47 +102,103 @@ class _GroupsWidgetState extends State<GroupsWidget> {
                               endActionPane: ActionPane(
                                 motion: const ScrollMotion(),
                                 children: [
-                                  SlidableAction(
-                                    onPressed: (context) {
-                                      //if is not the creator of the group(checking by device ID) it can not be edited
-                                      if (snapshot
-                                              .data![index].createdByDeviceId !=
-                                          currentDeviceId) {
-                                        print(currentDeviceId);
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          const SnackBar(
-                                              content: Text(
-                                                  'You can not edit this group')),
+                                  //if is not the creator of the group(checking by device ID) hide de button
+                                  if (snapshot.data![index].createdByDeviceId ==
+                                      currentDeviceId)
+                                    SlidableAction(
+                                      onPressed: (context) {
+                                        EditGroupPopup.show(
+                                          context,
+                                          snapshot.data![index],
                                         );
-                                        return;
-                                      }
-                                      EditGroupPopup.show(
-                                        context,
-                                        snapshot.data![index],
-                                      );
-                                    },
-                                    foregroundColor: Colors.black,
-                                    icon:
-                                        FluentSystemIcons.ic_fluent_edit_filled,
-                                    label: "Edit",
-                                  ),
-                                  SlidableAction(
-                                    onPressed: (context) {
-                                      GroupManager().leaveGroup(
-                                          snapshot.data![index].groupID);
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(
-                                                'Deleted ${snapshot.data![index].groupName}')),
-                                      );
-                                    },
-                                    foregroundColor: Colors.red,
-                                    icon: FluentSystemIcons
-                                        .ic_fluent_delete_forever_filled,
-                                    label: 'Delete',
-                                  ),
+                                      },
+                                      foregroundColor: Colors.black,
+                                      icon: FluentSystemIcons
+                                          .ic_fluent_edit_filled,
+                                      label: "Edit",
+                                    ),
+                                  if (snapshot.data![index].createdByDeviceId ==
+                                      currentDeviceId)
+                                    SlidableAction(
+                                      onPressed: (context) {
+                                        // Show confirmation message before deleting
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text("Confirm Deletion"),
+                                              content: Text(
+                                                "Are you sure you want to delete this group?",
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Cancel"),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    GroupManager().deleteGroup(
+                                                      snapshot
+                                                          .data![index].groupID,
+                                                    );
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Delete"),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                      foregroundColor: Colors.red,
+                                      icon: FluentSystemIcons
+                                          .ic_fluent_delete_forever_filled,
+                                      label: 'Delete',
+                                    ),
+
+                                  //if is not the creator of the group(checking by device ID) show delete option button ortherwise show leave button
+                                  if (snapshot.data![index].createdByDeviceId !=
+                                      currentDeviceId)
+                                    SlidableAction(
+                                      onPressed: (context) {
+                                        // Show confirmation message before deleting
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: Text("Confirm Leave"),
+                                              content: Text(
+                                                "Are you sure you want to Leave this group?",
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Cancel"),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    GroupManager().leaveGroup(
+                                                      snapshot
+                                                          .data![index].groupID,
+                                                    );
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: Text("Leave"),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                      foregroundColor: Colors.red,
+                                      icon: FluentSystemIcons
+                                          .ic_fluent_person_leave_filled,
+                                      label: 'Leave',
+                                    ),
                                 ],
                               ),
                               child: GroupCard(

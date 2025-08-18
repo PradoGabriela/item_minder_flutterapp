@@ -1,0 +1,79 @@
+{
+  "rules": {
+    "groups": {
+      "$groupId": {
+        // Allow read/write access to group data if user is a member
+        ".read": "auth != null && data.child('members').hasChild(auth.uid)",
+        ".write": "auth != null && data.child('members').hasChild(auth.uid)",
+        
+        // Group-specific rules
+        "groupID": {
+          ".validate": "$groupId == newData.val()"
+        },
+        
+        "groupName": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+        },
+        
+        "members": {
+          ".validate": "newData.hasChildren()"
+        },
+        
+        "itemsID": {
+          "$itemId": {
+            ".validate": "newData.isString()"
+          }
+        },
+        
+        "lastUpdatedBy": {
+          ".validate": "newData.isString()"
+        },
+        
+        "lastUpdatedDateString": {
+          ".validate": "newData.isString()"
+        }
+      }
+    },
+    
+    // Public group discovery (optional - for join by ID feature)
+    "public_groups": {
+      "$groupId": {
+        ".read": true,
+        ".write": "auth != null && (data.child('createdBy').val() == auth.uid || !data.exists())"
+      }
+    },
+    
+    // User profiles (optional)
+    "users": {
+      "$userId": {
+        ".read": "$userId == auth.uid",
+        ".write": "$userId == auth.uid"
+      }
+    }
+  }
+}
+
+/* 
+SETUP INSTRUCTIONS:
+
+1. Go to Firebase Console > Realtime Database > Rules
+2. Copy the above JSON configuration
+3. Paste it into the Rules editor
+4. Click "Publish"
+
+NOTES:
+- These rules assume you're using Firebase Authentication
+- Users can only access groups they're members of
+- The rules validate data structure and types
+- Adjust permissions based on your specific requirements
+
+SECURITY CONSIDERATIONS:
+- Enable Firebase Authentication for production
+- Consider adding rate limiting
+- Add more specific validation rules based on your needs
+- Test thoroughly before deploying to production
+
+TESTING:
+Use the Firebase Console's Rules Playground to test these rules
+with different authentication scenarios.
+*/

@@ -5,7 +5,6 @@ import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
-import 'package:item_minder_flutterapp/base/managers/snack_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/templates_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
@@ -33,6 +32,7 @@ class GroupManager {
     String createdBy,
     String groupIconUrl,
     List<String> categoriesNames,
+    String memberName,
   ) async {
     debugPrint('✅ Starting to create');
     String newID = await createGroupID();
@@ -54,6 +54,7 @@ class GroupManager {
       createdByDeviceId: DeviceId().getDeviceId(),
       //When creating the group, is goiung to be always offlibe first
       isOnline: false,
+      memberName: memberName,
     );
     debugPrint(newGroup.groupID);
 
@@ -184,6 +185,23 @@ class GroupManager {
     await BoxManager().groupBox.add(fireGroup);
   }
 
+//Remove updated deleted group from hive box
+  Future<void> removeGroupFromHiveBox(String groupID) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Remove the group from Hive
+      await BoxManager().groupBox.delete(group.key);
+      debugPrint('✅ Group removed from Hive: ${group.groupName}');
+    } catch (e) {
+      debugPrint('❌ Error removing group from Hive: $e');
+    }
+  }
+
   //Edit group from firebase
   Future<void> editGroupFromFirebase(
     String id,
@@ -209,7 +227,7 @@ class GroupManager {
     groupToEdit.save();
   }
 
-  //joing a group, create and empy group in the hive box them get the info from the firebase
+  //joing a group, create and empty group in the hive box them get the info from the firebase
   Future<bool> joinGroup(
     String groupID,
     String userName,
@@ -225,7 +243,7 @@ class GroupManager {
         return false;
       } else {
         // Join group in Firebase
-        final newGroup = await FirebaseGroupManager().joinGroup(
+        final newGroup = await FirebaseGroupManager().joinGroupFromFirebase(
           groupID,
           DeviceId().getDeviceId(),
           userName,
@@ -259,7 +277,7 @@ class GroupManager {
   }
 
   //leave a group, remove the group from the hive box and firebase
-  Future<void> leaveGroup(
+  Future<void> deleteGroup(
     String groupID,
   ) async {
     try {
@@ -275,6 +293,38 @@ class GroupManager {
 
       // Remove the group from Firebase
       await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+    } catch (e) {
+      debugPrint('❌ Error leaving group: $e');
+    }
+  }
+
+  //Leave joined Group
+  Future<void> leaveGroup(
+    String groupID,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+      String groupName = group.groupName;
+      String memberName = group.memberName;
+
+      debugPrint('🚪 Starting to leave group: $groupName');
+      debugPrint('   Member leaving: $memberName');
+      debugPrint('   Group ID: $groupID');
+
+      // IMPORTANT: Update Firebase FIRST, then remove local data
+      // This ensures other members get notified before we lose local reference
+      await FirebaseGroupManager().removeGroupMemberFromFirebase(groupID,
+          memberName, DeviceId().getDeviceId(), DateTime.now().toString());
+
+      debugPrint('✅ Firebase updated - member removed from group');
+
+      // Now remove the group from local Hive storage
+      await BoxManager().groupBox.delete(group.key);
+      debugPrint('✅ Group removed from local Hive: $groupName');
     } catch (e) {
       debugPrint('❌ Error leaving group: $e');
     }
@@ -301,11 +351,73 @@ class GroupManager {
         groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
         groupToUpdate.save();
         // Update the group in Firebase
-        await FirebaseGroupManager().updateGroupLastUpdated(
-            groupID, DeviceId().getDeviceId(), DateTime.now().toString());
+        await FirebaseGroupManager().removeGroupMemberFromFirebase(
+            groupID,
+            memberID,
+            groupToUpdate.lastUpdatedBy,
+            groupToUpdate.lastUpdatedDateString);
       }
     } catch (e) {
       debugPrint('❌ Error deleting member from group: $e');
+    }
+  }
+
+  //Add member to group
+  Future<void> addMemberToGroup(
+    String groupID,
+    String memberID,
+    String lastUpdatedBy,
+    String lastUpdatedDateString,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Add the member to the group's members list
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null && !groupToUpdate.members.contains(memberID)) {
+        groupToUpdate.members.add(memberID);
+        groupToUpdate.lastUpdatedBy = lastUpdatedBy;
+        groupToUpdate.lastUpdatedDateString = lastUpdatedDateString;
+        groupToUpdate.save();
+      }
+    } catch (e) {
+      debugPrint('❌ Error adding member to group: $e');
+    }
+  }
+
+  //Remove GroupMemberFromListener
+  Future<void> removeGroupMemberFromListener(
+    String groupID,
+    String memberID,
+    String lastUpdatedBy,
+    String lastUpdatedDateString,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Remove the member from the group's members list
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null && groupToUpdate.members.contains(memberID)) {
+        groupToUpdate.members.remove(memberID);
+        groupToUpdate.lastUpdatedBy = lastUpdatedBy;
+        groupToUpdate.lastUpdatedDateString = lastUpdatedDateString;
+        groupToUpdate.save();
+        debugPrint('✅ Member removed from group via listener: $memberID');
+      } else {
+        debugPrint('⚠️ Member not found in group or group is null: $memberID');
+      }
+    } catch (e) {
+      debugPrint('❌ Error removing member from listener: $e');
     }
   }
 
@@ -342,13 +454,13 @@ class GroupManager {
 
   //UpdateGroupName
   Future<void> updateGroupName(
-    String groupID,
+    String passGroupID,
     String newGroupName,
   ) async {
     try {
       // Find the group by ID
       final group = BoxManager().groupBox.values.firstWhere(
-            (group) => group.groupID == groupID,
+            (group) => group.groupID == passGroupID,
             orElse: () => throw Exception('Group not found'),
           );
 
@@ -362,7 +474,7 @@ class GroupManager {
         groupToUpdate.save();
         // Update the group in Firebase
         await FirebaseGroupManager().updateGroupNameInFirebase(
-          groupID,
+          groupToUpdate,
           newGroupName,
         );
       }
@@ -390,7 +502,7 @@ class GroupManager {
 
       // Update the group icon URL in Firebase
       await FirebaseGroupManager().updateGroupIconUrlInFirebase(
-        groupID,
+        groupToUpdate!,
         newGroupIconUrl,
       );
     } catch (e) {
@@ -436,6 +548,44 @@ class GroupManager {
         if (groupToUpdate.groupName != groupName) {
           updateGroupName(groupID, groupName);
         }
+      }
+    } catch (e) {
+      debugPrint('❌ Error editing group base info: $e');
+    }
+  }
+
+  //Edit group base info from firebase
+  Future<void> editGroupBaseInfoFromFirebase(
+    String groupID,
+    String newGroupName,
+    String newGroupIconUrl,
+    String lastUpdatedBy,
+    String lastUpdatedDateString,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Update the group's base information
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null) {
+        // Check if the group icon URL has changed
+        if (groupToUpdate.groupIconUrl != newGroupIconUrl) {
+          groupToUpdate.groupIconUrl = newGroupIconUrl;
+          debugPrint('✅ Group icon URL updated: ${groupToUpdate.groupIconUrl}');
+        }
+        // Check if the group name has changed
+        if (groupToUpdate.groupName != newGroupName) {
+          groupToUpdate.groupName = newGroupName;
+          debugPrint('✅ Group name updated: ${groupToUpdate.groupName}');
+        }
+        groupToUpdate.lastUpdatedBy = lastUpdatedBy;
+        groupToUpdate.lastUpdatedDateString = lastUpdatedDateString;
+        groupToUpdate.save();
       }
     } catch (e) {
       debugPrint('❌ Error editing group base info: $e');
