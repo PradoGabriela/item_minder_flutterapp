@@ -7,10 +7,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 import 'package:item_minder_flutterapp/listeners/firebase_listeners.dart';
 import 'package:item_minder_flutterapp/screens/starter_screen.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
+import 'package:item_minder_flutterapp/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +33,9 @@ Future<void> main() async {
   // Safe initialization
   try {
     if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       debugPrint('🔥 Firebase initialized successfully');
     }
   } catch (e) {

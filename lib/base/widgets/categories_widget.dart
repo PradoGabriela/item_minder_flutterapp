@@ -7,8 +7,74 @@ import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
 import 'package:item_minder_flutterapp/screens/add_item_screen.dart';
 
+/// **Category-based inventory display with swipe navigation and filtering.**
+///
+/// [CategoriesWidget] provides the **primary inventory browsing interface**
+/// for the Item Minder app, organizing items by category with intuitive
+/// navigation and real-time data synchronization. It serves as the main
+/// content area of the [HomeScreen].
+///
+/// **Core Features:**
+/// * **Category Filtering**: Display items filtered by selected category
+/// * **Swipe Navigation**: Horizontal gestures to switch between categories
+/// * **Dropdown Selection**: Alternative category switching via dropdown menu
+/// * **Real-time Updates**: Automatic refresh when inventory changes
+/// * **Add Item Integration**: Quick access to add new items in current category
+/// * **Responsive Grid**: Adaptive layout that adjusts to available space
+///
+/// **Navigation Patterns:**
+/// * **Swipe Right**: Move to next category (with boundary protection)
+/// * **Swipe Left**: Move to previous category (with boundary protection)
+/// * **Dropdown Selection**: Direct category jumping
+/// * **Grid Display**: Organized item presentation with consistent spacing
+///
+/// **Data Integration:**
+/// * **Group Context**: Shows only items from the specified group
+/// * **Category Manager**: Uses [AppCategories] for filtering and organization
+/// * **Hive Listeners**: Automatic UI updates when local storage changes
+/// * **Box Manager**: Direct integration with persistent storage
+///
+/// **User Experience:**
+/// * **Visual Feedback**: Loading states and empty category handling
+/// * **Consistent Styling**: Uses [AppStyles] for brand consistency
+/// * **Intuitive Controls**: Clear visual indicators for navigation options
+/// * **Performance Optimized**: Efficient filtering and rendering
+///
+/// **Important Notes:**
+/// * Must receive a valid group ID for proper data filtering
+/// * Automatically disposes Hive listeners to prevent memory leaks
+/// * Handles edge cases like empty categories gracefully
+///
+/// {@tool snippet}
+/// ```dart
+/// // Display categorized inventory for a specific group
+/// CategoriesWidget(
+///   currentGroupId: selectedGroup.groupID,
+/// )
+///
+/// // Typically used within HomeScreen
+/// class HomeScreen extends StatelessWidget {
+///   Widget build(BuildContext context) {
+///     return Scaffold(
+///       body: CategoriesWidget(
+///         currentGroupId: widget.groupId,
+///       ),
+///     );
+///   }
+/// }
+/// ```
+/// {@end-tool}
 class CategoriesWidget extends StatefulWidget {
+  /// **Group identifier** for filtering inventory items.
+  ///
+  /// Ensures that only items belonging to the specified group are displayed,
+  /// maintaining proper data isolation in multi-group environments.
   final String currentGroupId;
+
+  /// Creates a [CategoriesWidget] for the specified group.
+  ///
+  /// **Parameters:**
+  /// * [currentGroupId] - The group ID to filter inventory items by
   const CategoriesWidget({super.key, required this.currentGroupId});
 
   @override

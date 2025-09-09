@@ -10,23 +10,134 @@ import 'package:item_minder_flutterapp/device_id.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
 import 'package:random_string/random_string.dart';
 
+/// **Group management service for multi-user inventory collaboration.**
+///
+/// [GroupManager] handles all aspects of **group-based inventory management**,
+/// enabling multiple users to collaborate on shared inventory systems. It
+/// implements the same dual-persistence architecture as [ItemManager], with
+/// local Hive storage as the source of truth and Firebase for real-time sync.
+///
+/// **Core Responsibilities:**
+/// * **Group Lifecycle**: Create, join, edit, and delete user groups
+/// * **Member Management**: Add/remove members, track group ownership
+/// * **Item Association**: Manage relationships between groups and inventory items
+/// * **Template Integration**: Populate new groups with default inventory items
+/// * **Firebase Sync**: Real-time synchronization across all group members
+///
+/// **Group Architecture:**
+/// * **Group ID**: Unique identifier for group identification and sharing
+/// * **Ownership Model**: Creator has special privileges (edit/delete permissions)
+/// * **Member Lists**: Track all users who can access the group's inventory
+/// * **Category Support**: Configure available inventory categories per group
+/// * **Item Tracking**: Maintain lists of all items belonging to the group
+///
+/// **Critical Usage Rules:**
+/// * **Never bypass this manager** - all group operations must go through [GroupManager]
+/// * **Ownership validation** - check creator permissions before destructive operations
+/// * **Device tracking** - all changes track the originating device for conflict resolution
+/// * **Template initialization** - new groups should include default inventory items
+///
+/// This singleton class ensures proper multi-user collaboration and maintains
+/// data consistency across the app's group-based architecture.
+///
+/// {@tool snippet}
+/// ```dart
+/// // Create a new group with default categories
+/// final groupManager = GroupManager();
+/// bool success = await groupManager.createGroup(
+///   "Family Kitchen",
+///   "John Doe",
+///   "assets/icons/family.png",
+///   ["kitchen", "bathroom", "pantry"],
+///   "John Doe",
+/// );
+///
+/// // Join an existing group
+/// bool joined = await groupManager.joinGroup("GROUP123", "Jane Doe");
+///
+/// // Get all groups for current user
+/// List<AppGroup> userGroups = groupManager.getHiveGroups();
+/// ```
+/// {@end-tool}
 class GroupManager {
-  // Singleton instance
+  /// **Singleton instance** for global access to group management functionality.
   static final GroupManager _instance = GroupManager._internal();
 
-  // Private constructor
+  /// **Private constructor** for singleton pattern implementation.
   GroupManager._internal();
 
-  // Factory constructor to return the singleton instance
+  /// **Factory constructor** returns the singleton instance.
+  ///
+  /// Ensures all parts of the app use the same [GroupManager] instance,
+  /// maintaining consistency in group operations and state management.
   factory GroupManager() {
     return _instance;
   }
 
+  /// Retrieves all groups from local Hive storage.
+  ///
+  /// Returns a list of all [AppGroup] objects that the current user has
+  /// access to, including groups they created and groups they've joined.
+  ///
+  /// **Returns:**
+  /// * List of [AppGroup] objects from local storage
+  ///
+  /// **Usage:** Primary method for populating group selection interfaces
+  /// and checking user's group membership.
   List<AppGroup> getHiveGroups() {
     return BoxManager().groupBox.values.toList();
   }
 
-  //create a new group
+  /// Creates a new group with full initialization and template population.
+  ///
+  /// This method performs the **complete group creation workflow** including
+  /// ID generation, group setup, template item population, shopping list
+  /// initialization, and Firebase synchronization.
+  ///
+  /// **Parameters:**
+  /// * [groupName] - Display name for the group
+  /// * [createdBy] - Name of the user creating the group (becomes owner)
+  /// * [groupIconUrl] - Asset path for the group's visual icon
+  /// * [categoriesNames] - List of inventory categories to enable (defaults to ["Other"] if empty)
+  /// * [memberName] - Initial member name (typically same as createdBy)
+  ///
+  /// **Returns:**
+  /// * `true` if group creation was successful
+  /// * `false` if creation failed at any step
+  ///
+  /// **Creation Workflow:**
+  /// 1. Generates unique group ID
+  /// 2. Validates and sets default categories if none provided
+  /// 3. Creates [AppGroup] object with metadata and tracking fields
+  /// 4. Persists to local Hive storage
+  /// 5. Initializes shopping list for the group
+  /// 6. Populates with template inventory items
+  /// 7. Syncs to Firebase for real-time collaboration
+  ///
+  /// **Template Integration:** Automatically adds default inventory items
+  /// based on selected categories using [TemplatesManager].
+  ///
+  /// **Error Handling:** Returns `false` on any failure, with detailed
+  /// logging in debug mode for troubleshooting.
+  ///
+  /// {@tool snippet}
+  /// ```dart
+  /// // Create a family kitchen group with common categories
+  /// bool success = await GroupManager().createGroup(
+  ///   "Smith Family Kitchen",
+  ///   "Sarah Smith",
+  ///   "assets/icons/family.png",
+  ///   ["kitchen", "bathroom", "pantry", "laundry"],
+  ///   "Sarah Smith",
+  /// );
+  ///
+  /// if (success) {
+  ///   // Navigate to the new group's inventory
+  /// } else {
+  ///   // Show error message
+  /// }
+  /// ```
+  /// {@end-tool}
   Future<bool> createGroup(
     String groupName,
     String createdBy,
