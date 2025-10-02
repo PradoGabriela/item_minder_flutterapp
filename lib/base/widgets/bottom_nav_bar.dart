@@ -1,7 +1,9 @@
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/base/widgets/auth_widget.dart';
 import 'package:item_minder_flutterapp/base/widgets/groups_widget.dart';
+import 'package:item_minder_flutterapp/screens/auth_example_screen.dart';
 import 'package:item_minder_flutterapp/screens/calendar_screen.dart';
 import 'package:item_minder_flutterapp/screens/profile_screen.dart';
 import 'package:item_minder_flutterapp/screens/home_screen.dart';
@@ -80,7 +82,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       const StarterScreen(),
       HomeScreen(groupId: widget.currentGroupId),
       ShoppingListScreen(currentGroupID: widget.currentGroupId),
-      const CalendarScreen(),
+      const AuthWidget(),
       ProfileScreen(groupId: widget.currentGroupId),
     ];
   }

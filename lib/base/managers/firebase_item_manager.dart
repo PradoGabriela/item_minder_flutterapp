@@ -59,14 +59,19 @@ class FirebaseItemManager {
 
   Future<void> updateItemInFirebase(
       String groupID, AppItem item, String itemID) async {
-    // Update an item in Firebase
-    // Implement the logic to update the item in Firebase
     if (await ConnectivityService().isOnline) {
       try {
-        await FirebaseDatabase.instance
-            .ref('groups/$groupID/itemsID/$itemID')
-            .update(
-          {
+        // ✅ Check if item exists first, then update or create
+        final itemRef = FirebaseDatabase.instance
+            .ref('groups/$groupID/itemsID')
+            .child(itemID);
+
+        // Check if item exists
+        final snapshot = await itemRef.once();
+
+        if (snapshot.snapshot.exists) {
+          // Update existing item
+          await itemRef.update({
             'brandName': item.brandName,
             'description': item.description,
             'iconUrl': item.iconUrl,
@@ -78,19 +83,44 @@ class FirebaseItemManager {
             'minQuantity': item.minQuantity,
             'maxQuantity': item.maxQuantity,
             'isAutoAdd': item.isAutoAdd,
-            'lastUpdated': DateTime.now().toString(),
+            'addedDateString': item.addedDateString,
+            'lastUpdated': item.lastUpdated.toString(),
             'lastUpdatedBy': item.lastUpdatedBy,
-          },
-        );
-        debugPrint('Item updated in Firebase: ${item.type}');
-        //update the group
-        FirebaseGroupManager().updateGroupLastUpdated(
+            'groupID': groupID,
+            'itemID': itemID,
+          });
+          debugPrint('✅ Item updated in Firebase: ${item.type}');
+        } else {
+          // Item doesn't exist, create it
+          await itemRef.set({
+            'brandName': item.brandName,
+            'description': item.description,
+            'iconUrl': item.iconUrl,
+            'imageUrl': item.imageUrl,
+            'category': item.category,
+            'price': item.price,
+            'type': item.type,
+            'quantity': item.quantity,
+            'minQuantity': item.minQuantity,
+            'maxQuantity': item.maxQuantity,
+            'isAutoAdd': item.isAutoAdd,
+            'addedDateString': item.addedDateString,
+            'lastUpdated': item.lastUpdated.toString(),
+            'lastUpdatedBy': item.lastUpdatedBy,
+            'groupID': groupID,
+            'itemID': itemID,
+          });
+          debugPrint('✅ Item created in Firebase: ${item.type}');
+        }
+
+        // Update the group timestamp
+        await FirebaseGroupManager().updateGroupLastUpdated(
             groupID, item.lastUpdatedBy, item.lastUpdated.toString());
       } catch (e) {
-        debugPrint('Failed to update item in Firebase: $e');
+        debugPrint('❌ Failed to update item in Firebase: $e');
       }
     } else {
-      debugPrint('No internet connection.');
+      debugPrint('❌ No internet connection.');
     }
   }
 
@@ -127,6 +157,43 @@ class FirebaseItemManager {
       }
     } else {
       debugPrint('No internet connection..');
+    }
+  }
+
+  Future<AppItem?> fetchItemFromFirebase(String groupID, String itemID) async {
+    // Retrieve an item from Firebase
+    try {
+      final snapshot = await FirebaseDatabase.instance
+          .ref('groups/$groupID/itemsID/$itemID')
+          .once();
+
+      if (snapshot.snapshot.value != null) {
+        final data = snapshot.snapshot.value as Map<dynamic, dynamic>;
+        AppItem fetchedItem = AppItem.custom(
+          data['brandName'] ?? "No Brand Provided",
+          data['description'] ?? "No Description Provided",
+          data['iconUrl'] ?? "",
+          data['imageUrl'] ?? "",
+          data['category'] ?? "uncategorized",
+          (data['price'] as num?)?.toDouble() ?? 0.0,
+          data['type'] ?? "unknown",
+          data['quantity'] ?? 0,
+          data['minQuantity'] ?? 1,
+          data['maxQuantity'] ?? 4,
+          data['isAutoAdd'] ?? false,
+          DateTime.parse(data['lastUpdated'] ?? DateTime.now().toString()),
+          data['lastUpdatedBy'] ?? "",
+          groupID,
+          itemID,
+        );
+        return fetchedItem;
+      } else {
+        debugPrint('Item not found in Firebase: $itemID');
+        return null;
+      }
+    } catch (e) {
+      debugPrint('Failed to retrieve item from Firebase: $e');
+      return null;
     }
   }
 }

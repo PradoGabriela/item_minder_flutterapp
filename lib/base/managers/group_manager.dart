@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/templates_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
@@ -163,7 +166,7 @@ class GroupManager {
       lastUpdatedBy: DeviceId().getDeviceId(),
       lastUpdatedDateString: DateTime.now().toString(),
       createdByDeviceId: DeviceId().getDeviceId(),
-      //When creating the group, is goiung to be always offlibe first
+      //When creating the group, is goiung to be always offline first
       isOnline: false,
       memberName: memberName,
     );
@@ -173,7 +176,7 @@ class GroupManager {
     await BoxManager().groupBox.add(newGroup);
 
     // Add the new group to Firebase
-    await FirebaseGroupManager().addGroupToFirebase(newGroup);
+    // await FirebaseGroupManager().addGroupToFirebase(newGroup);
     debugPrint(
         '✅ Group created: ${newGroup.groupName} (ID: ${newGroup.groupID})');
 
@@ -190,12 +193,12 @@ class GroupManager {
   Future<String> createGroupID() async {
     debugPrint("starting to create an id");
     // the user needs connection to create a group
-    if (!await ConnectivityService().isOnline) {
+    /*    if (!await ConnectivityService().isOnline) {
       debugPrint('❌ No internet connection. Cannot create group ID.');
       // Return feedback to the user
       // TODO: Use a snackbar or dialog to inform the user
       return 'no id'; // Return a special string if offline
-    }
+    } */
 
     String id;
     bool exists;
@@ -207,15 +210,121 @@ class GroupManager {
           BoxManager().groupBox.values.any((group) => group.groupID == id);
 
       // Check if the ID exists in Firebase
-      final event = await FirebaseDatabase.instance.ref('groups/$id').once();
+      // final event = await FirebaseDatabase.instance.ref('groups/$id').once();
 
-      bool existsInFirebase = event.snapshot.exists;
+      //  bool existsInFirebase = event.snapshot.exists;
 
-      exists = existsLocally || existsInFirebase;
+      exists = existsLocally;
     } while (exists);
 
     debugPrint("new Id $id");
     return id; // Return the unique ID
+  }
+
+  Future<String> createNewIdForFirebase(String currentID) async {
+    debugPrint("starting to checking an id");
+    // the user needs connection to check
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot create group ID.');
+      // Return feedback to the user
+      // TODO: Use a snackbar or dialog to inform the user
+      return 'no id'; // Return a special string if offline
+    }
+
+    String newId = currentID;
+    bool exists;
+
+    // Check if the ID exists in Firebase
+    final event =
+        await FirebaseDatabase.instance.ref('groups/$currentID').once();
+
+    bool existsInFirebase = event.snapshot.exists;
+
+    exists = existsInFirebase;
+    while (exists) {
+      newId = randomAlphaNumeric(6);
+      // Check if the ID exists locally
+      bool existsLocally =
+          BoxManager().groupBox.values.any((group) => group.groupID == newId);
+
+      // Check if the ID exists in Firebase
+      final event = await FirebaseDatabase.instance.ref('groups/$newId').once();
+
+      bool existsInFirebase = event.snapshot.exists;
+
+      exists = existsLocally || existsInFirebase;
+    }
+
+    return newId;
+  }
+
+  Future<void> connectGroup(String groupID) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+
+      // Get new ID for Firebase
+      final newFirebaseId = await createNewIdForFirebase(groupID);
+
+      // Handle offline case
+      if (newFirebaseId == 'no id') {
+        debugPrint('❌ Cannot connect group - no internet connection');
+        return;
+      }
+
+      groupToUpdate?.isOnline = true;
+      groupToUpdate?.groupID = newFirebaseId;
+      groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
+      groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
+      groupToUpdate?.save();
+      await FirebaseGroupManager().addGroupToFirebase(groupToUpdate!);
+      await ItemManager().connectAllItems(groupID);
+    } catch (e) {
+      debugPrint('❌ Error updating ID: $e');
+    }
+  }
+
+  //Disconnect group and remove all memebers except the current device member
+  Future<void> disconnectGroup(String groupID) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      groupToUpdate?.isOnline = false;
+      groupToUpdate?.members = [
+        groupToUpdate!.memberName
+      ]; //keep only the current device member
+      groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
+      groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
+      groupToUpdate?.save();
+      await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+    } catch (e) {
+      debugPrint('❌ Error updating ID: $e');
+    }
+  }
+
+  //get online status of the group by its ID
+  bool isGroupOnline(String groupID) {
+    try {
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      return group.isOnline;
+    } catch (e) {
+      debugPrint('❌ Error getting group online status: $e');
+      return false;
+    }
   }
 
   //add an item to the group with the groupID
@@ -265,9 +374,13 @@ class GroupManager {
       groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
       groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
       groupToUpdate?.save();
-      // Update the group in Firebase'
-      await FirebaseGroupManager().updateGroupLastUpdated(
-          groupID, DeviceId().getDeviceId(), DateTime.now().toString());
+      // Update the group in Firebase if is online
+      if (groupToUpdate!.isOnline) {
+        await FirebaseGroupManager().updateGroupLastUpdated(
+            groupID,
+            DeviceId().getDeviceId(),
+            DateTime.now().toString()); //TODO need to remove the item properly
+      }
     } catch (e) {
       debugPrint('❌ Error removing item from group: $e');
     }
@@ -323,6 +436,11 @@ class GroupManager {
       throw Exception('Group not found');
     }
     AppGroup groupToEdit = BoxManager().groupBox.get(group.key)!;
+
+    debugPrint('🔍 BEFORE UPDATE - Group ${groupToEdit.groupID}:');
+    debugPrint('   Local isOnline: ${groupToEdit.isOnline}');
+    debugPrint('   Firebase isOnline: ${fireGroup.isOnline}');
+
     groupToEdit.groupName = fireGroup.groupName;
     groupToEdit.members = fireGroup.members;
     groupToEdit.groupIconUrl = fireGroup.groupIconUrl;
@@ -334,6 +452,9 @@ class GroupManager {
     groupToEdit.categoriesNames = fireGroup.categoriesNames;
     groupToEdit.lastUpdatedDateString = fireGroup.lastUpdatedDateString;
     groupToEdit.lastUpdatedBy = fireGroup.lastUpdatedBy;
+
+    debugPrint('🔍 AFTER UPDATE - Group ${groupToEdit.groupID}:');
+    debugPrint('   Final isOnline: ${groupToEdit.isOnline}');
 
     groupToEdit.save();
   }
@@ -367,9 +488,21 @@ class GroupManager {
           }
           return false;
         }
-
         // Add to local storage
         await BoxManager().groupBox.add(newGroup);
+        debugPrint('✅ Group added to local Hive: ${newGroup.groupName}');
+
+        // ✅ FIXED: Force fetch items regardless of device ID matching
+        // This ensures items are loaded even when Firebase listener skips the update
+        debugPrint(
+            '🔄 Force fetching items for newly joined group: ${newGroup.groupID}');
+        await ItemManager()
+            .fetchAndAddItemsForGroup(newGroup.groupID, newGroup.itemsID);
+
+        // ✅ Also initialize shopping list for the joined group
+        await ShoppingManager().initShoppingList(newGroup.groupID);
+        debugPrint(
+            '✅ Shopping list initialized for group: ${newGroup.groupID}');
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -398,14 +531,18 @@ class GroupManager {
             orElse: () => throw Exception('Group not found'),
           );
       String groupName = group.groupName;
+      bool isOnline = group.isOnline;
+
       // Remove the group from Hive
       await BoxManager().groupBox.delete(group.key);
       debugPrint('✅ Group removed from Hive: $groupName');
 
-      // Remove the group from Firebase
-      await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+      // Remove the group from Firebase if is an online group
+      if (isOnline) {
+        await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+      }
     } catch (e) {
-      debugPrint('❌ Error leaving group: $e');
+      debugPrint('❌ Error deleting group: $e');
     }
   }
 
@@ -537,29 +674,10 @@ class GroupManager {
     String groupID,
     bool isOnline,
   ) async {
-    try {
-      // Find the group by ID
-      final group = BoxManager().groupBox.values.firstWhere(
-            (group) => group.groupID == groupID,
-            orElse: () => throw Exception('Group not found'),
-          );
-
-      // Update the group's status
-      final groupToUpdate =
-          BoxManager().groupBox.get(group.key); // Get the group from Hive
-      if (groupToUpdate != null) {
-        groupToUpdate.isOnline = isOnline;
-        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
-        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
-        groupToUpdate.save();
-        // Update the group in Firebase
-        await FirebaseGroupManager().updateGroupStatusInFirebase(
-          group,
-          isOnline,
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Error updating group status: $e');
+    if (isOnline) {
+      await connectGroup(groupID);
+    } else {
+      await disconnectGroup(groupID);
     }
   }
 
@@ -584,10 +702,12 @@ class GroupManager {
         groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
         groupToUpdate.save();
         // Update the group in Firebase
-        await FirebaseGroupManager().updateGroupNameInFirebase(
-          groupToUpdate,
-          newGroupName,
-        );
+        if (groupToUpdate.isOnline) {
+          await FirebaseGroupManager().updateGroupNameInFirebase(
+            groupToUpdate,
+            newGroupName,
+          );
+        }
       }
     } catch (e) {
       debugPrint('❌ Error updating group name: $e');
@@ -612,10 +732,12 @@ class GroupManager {
       }
 
       // Update the group icon URL in Firebase
-      await FirebaseGroupManager().updateGroupIconUrlInFirebase(
-        groupToUpdate!,
-        newGroupIconUrl,
-      );
+      if (groupToUpdate!.isOnline) {
+        await FirebaseGroupManager().updateGroupIconUrlInFirebase(
+          groupToUpdate!,
+          newGroupIconUrl,
+        );
+      }
     } catch (e) {
       debugPrint('❌ Error updating group icon URL: $e');
     }
@@ -651,13 +773,15 @@ class GroupManager {
             deleteMemberFromGroup(groupID, member);
           }
         }
-        //Check if the group state have changed
-        if (groupToUpdate.isOnline != isOnline) {
-          updateGroupStatus(groupID, isOnline);
-        }
+
         // Check if the group name has changed
         if (groupToUpdate.groupName != groupName) {
           updateGroupName(groupID, groupName);
+        }
+
+        //Check if the group state have changed
+        if (groupToUpdate.isOnline != isOnline) {
+          updateGroupStatus(groupID, isOnline);
         }
       }
     } catch (e) {

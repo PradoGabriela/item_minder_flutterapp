@@ -191,9 +191,13 @@ class ItemManager {
       // Add to Hive box (assuming BoxManager().itemBox is a Hive Box)
       await BoxManager().itemBox.add(customItem);
       debugPrint("Custom item key item added to box ID: ${customItem.itemID}");
+
       await GroupManager().addItemToGroup(groupID, itemID);
-      FirebaseItemManager()
-          .addItemToFirebase(groupID, customItem, itemID); // Add to Firebase
+
+      if (GroupManager().isGroupOnline(groupID)) {
+        await FirebaseItemManager()
+            .addItemToFirebase(groupID, customItem, itemID); // Add to Firebase
+      }
 
       if (kDebugMode) {
         print(
@@ -280,13 +284,19 @@ class ItemManager {
       if (minQuantity != null) item.minQuantity = minQuantity;
       if (maxQuantity != null) item.maxQuantity = maxQuantity;
       if (isAutoadd != null) item.isAutoAdd = isAutoadd;
+      item.lastUpdated = DateTime.now(); // Update last updated timestamp
       item.lastUpdatedBy =
           DeviceId().getDeviceId(); // Update last updated by field
 
       // Save changes (assuming Hive or similar key-value store)
       await BoxManager().itemBox.put(item.key, item);
-      FirebaseItemManager().updateItemInFirebase(
-          groupID, item, item.itemID); // Update in Firebase
+      debugPrint(
+          "is the group online: ${GroupManager().isGroupOnline(groupID)}");
+      if (GroupManager().isGroupOnline(groupID)) {
+        // Sync to Firebase only if group is online
+        await FirebaseItemManager()
+            .updateItemInFirebase(groupID, item, item.itemID);
+      }
 
       if (kDebugMode) {
         print("Item updated: ${item.toString()}");
@@ -296,6 +306,21 @@ class ItemManager {
         print("Failed to update item: $e");
       }
       rethrow; // Let the caller handle the error if needed
+    }
+  }
+
+  //Connect all the items in the group to update the items in firebase
+  Future<void> connectAllItems(String groupID) async {
+    if (GroupManager().isGroupOnline(groupID)) {
+      // Get all items in the group
+      final items = getItemsInGroup(groupID);
+      if (kDebugMode) {
+        print(items);
+      }
+      for (var item in items) {
+        await FirebaseItemManager()
+            .updateItemInFirebase(groupID, item, item.itemID);
+      }
     }
   }
 
@@ -345,8 +370,10 @@ class ItemManager {
     item.save();
     try {
       // Update in Firebase
-      await FirebaseItemManager()
-          .updateItemInFirebase(item.groupID, item, item.itemID);
+      if (GroupManager().isGroupOnline(item.groupID)) {
+        await FirebaseItemManager()
+            .updateItemInFirebase(item.groupID, item, item.itemID);
+      }
 
       if (kDebugMode) {
         print("Item quantity updated: ${item.toString()}");
@@ -501,7 +528,9 @@ class ItemManager {
       await BoxManager().itemBox.delete(item.key!);
 
       // Delete from Firebase
-      await FirebaseItemManager().deleteItemFromFirebase(groupID, tempID);
+      if (GroupManager().isGroupOnline(groupID)) {
+        await FirebaseItemManager().deleteItemFromFirebase(groupID, tempID);
+      }
 
       // Remove from group
       await GroupManager().removeItemFromGroup(groupID, tempID);
@@ -813,6 +842,39 @@ class ItemManager {
         print('❌ Error getting all items: $e');
       }
       return [];
+    }
+  }
+
+  //get all the items from the current groupID
+  List<AppItem> getItemsInGroup(String groupID) {
+    try {
+      return BoxManager()
+          .itemBox
+          .values
+          .where((item) => item.groupID == groupID)
+          .toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error getting items in group $groupID: $e');
+      }
+      return [];
+    }
+  }
+
+  Future<void> fetchAndAddItemsForGroup(
+      String groupID, List<String> itemIDs) async {
+    for (var itemID in itemIDs) {
+      try {
+        final fetchedItem =
+            await FirebaseItemManager().fetchItemFromFirebase(groupID, itemID);
+        if (fetchedItem != null) {
+          await addItemFromFirebase(fetchedItem);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('❌ Error fetching/adding item $itemID for group $groupID: $e');
+        }
+      }
     }
   }
 }

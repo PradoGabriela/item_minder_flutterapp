@@ -34,7 +34,7 @@ class FirebaseGroupManager {
           'createdBy': group.createdBy,
           'members': group.members,
           'groupIconUrl': group.groupIconUrl,
-          'itemsID': group.itemsID,
+          'itemsID': _convertItemsListToMap(group.itemsID),
           'shoppingListID': group.shoppingListID,
           'categoriesNames': group.categoriesNames,
           'lastUpdatedBy': group.lastUpdatedBy,
@@ -122,6 +122,9 @@ class FirebaseGroupManager {
         members.add(newMember);
       }
 
+      debugPrint(
+          '✅----------> is joining group online ${groupData['isOnline']}');
+
       await ref.child(groupId).update({
         'members': members,
         'lastUpdatedBy': deviceId,
@@ -129,11 +132,18 @@ class FirebaseGroupManager {
       });
 
       final updatedGroup = await ref.child(groupId).get();
-      final itemsMap =
-          updatedGroup.child('itemsID').value as Map<dynamic, dynamic>?;
+      final itemsData = updatedGroup.child('itemsID').value;
 
-      final foundItemsID =
-          itemsMap?.keys.map((key) => key.toString()).toList() ?? [];
+      List<String> foundItemsID = [];
+      if (itemsData != null) {
+        if (itemsData is Map) {
+          // New map structure - use keys as itemIDs
+          foundItemsID = itemsData.keys.map((key) => key.toString()).toList();
+        } else if (itemsData is List) {
+          // Old array structure - convert to string list
+          foundItemsID = itemsData.map((item) => item.toString()).toList();
+        }
+      }
       //create a group object from the data
       final group = AppGroup(
         groupID: updatedGroup.child('groupID').value as String,
@@ -154,7 +164,7 @@ class FirebaseGroupManager {
             updatedGroup.child('lastUpdatedDateString').value as String,
         createdByDeviceId:
             updatedGroup.child('createdByDeviceId').value as String,
-        isOnline: updatedGroup.child('isOnline').value as bool? ?? false,
+        isOnline: true,
         memberName: newMember,
       );
 
@@ -294,5 +304,21 @@ class FirebaseGroupManager {
     } catch (e) {
       debugPrint('❌ Firebase Group member addition failed: $e');
     }
+  }
+
+  /// Converts itemsID list to Firebase-compatible map structure
+  ///
+  /// This prevents Firebase from using array indices as keys and instead
+  /// uses the actual itemID values as keys for proper item management.
+  Map<String, bool> _convertItemsListToMap(List<String> itemsIDList) {
+    Map<String, bool> itemsMap = {};
+
+    for (String itemID in itemsIDList) {
+      if (itemID.isNotEmpty) {
+        itemsMap[itemID] = true; // Use itemID as key, true as placeholder value
+      }
+    }
+
+    return itemsMap;
   }
 }
