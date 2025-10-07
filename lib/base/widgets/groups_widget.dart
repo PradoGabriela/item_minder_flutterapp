@@ -20,22 +20,7 @@ class GroupsWidget extends StatefulWidget {
 }
 
 class _GroupsWidgetState extends State<GroupsWidget> {
-  List<AppGroup> currentGroups = [];
   String currentDeviceId = DeviceId().getDeviceId();
-
-  void _onGroupChanged() {
-    setState(() {
-      currentGroups = GroupManager().getHiveGroups();
-    });
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _onGroupChanged();
-    BoxManager().groupBox.listenable().addListener(_onGroupChanged);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,168 +47,160 @@ class _GroupsWidgetState extends State<GroupsWidget> {
             ),
             elevation: 0,
             color: Colors.white,
-            child: FutureBuilder<List<dynamic>>(
-              future: Future.value(currentGroups),
-              builder: (BuildContext context,
-                  AsyncSnapshot<List<dynamic>> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 20),
-                      Text("Groups",
-                          style:
-                              AppStyles().catTitleStyle.copyWith(fontSize: 24)),
-                      const SizedBox(height: 20),
-                      rowButtons()
-                    ],
-                  );
-                } else {
-                  return Column(
-                    children: [
-                      const SizedBox(height: 20),
-                      Text("Groups",
-                          style:
-                              AppStyles().catTitleStyle.copyWith(fontSize: 24)),
-                      const SizedBox(height: 20),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsetsDirectional.symmetric(
-                              horizontal: 24, vertical: 14),
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            return Slidable(
-                              key: ValueKey(snapshot.data![index].groupID),
-                              endActionPane: ActionPane(
-                                motion: const ScrollMotion(),
-                                children: [
-                                  //if is not the creator of the group(checking by device ID) hide de button
-                                  if (snapshot.data![index].createdByDeviceId ==
-                                      currentDeviceId)
-                                    SlidableAction(
-                                      onPressed: (context) {
-                                        EditGroupPopup.show(
-                                          context,
-                                          snapshot.data![index],
-                                        );
-                                      },
-                                      foregroundColor: Colors.black,
-                                      icon: FluentSystemIcons
-                                          .ic_fluent_edit_filled,
-                                      label: "Edit",
-                                    ),
-                                  if (snapshot.data![index].createdByDeviceId ==
-                                      currentDeviceId)
-                                    SlidableAction(
-                                      onPressed: (context) {
-                                        // Show confirmation message before deleting
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return AlertDialog(
-                                              title: Text("Confirm Deletion"),
-                                              content: Text(
-                                                "Are you sure you want to delete this group?",
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text("Cancel"),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    GroupManager().deleteGroup(
-                                                      snapshot
-                                                          .data![index].groupID,
-                                                    );
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text("Delete"),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                      foregroundColor: Colors.red,
-                                      icon: FluentSystemIcons
-                                          .ic_fluent_delete_forever_filled,
-                                      label: 'Delete',
-                                    ),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Text("Groups",
+                    style: AppStyles().catTitleStyle.copyWith(fontSize: 24)),
+                const SizedBox(height: 20),
+                // ✅ FIXED: Use ValueListenableBuilder for real-time Hive updates
+                Expanded(
+                  child: ValueListenableBuilder<Box<AppGroup>>(
+                    valueListenable: BoxManager().groupBox.listenable(),
+                    builder: (context, box, _) {
+                      final groups = GroupManager().getHiveGroups();
 
-                                  //if is not the creator of the group(checking by device ID) show delete option button ortherwise show leave button
-                                  if (snapshot.data![index].createdByDeviceId !=
-                                      currentDeviceId)
-                                    SlidableAction(
-                                      onPressed: (context) {
-                                        // Show confirmation message before deleting
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return AlertDialog(
-                                              title: Text("Confirm Leave"),
-                                              content: Text(
-                                                "Are you sure you want to Leave this group?",
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text("Cancel"),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    GroupManager().leaveGroup(
-                                                      snapshot
-                                                          .data![index].groupID,
-                                                    );
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: Text("Leave"),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                      foregroundColor: Colors.red,
-                                      icon: FluentSystemIcons
-                                          .ic_fluent_person_leave_filled,
-                                      label: 'Leave',
-                                    ),
-                                ],
-                              ),
-                              child: GroupCard(
-                                groupId: snapshot.data![index].groupID,
-                                groupName: snapshot.data![index].groupName,
-                                groupIconUrl:
-                                    snapshot.data![index].groupIconUrl,
-                                members: snapshot.data![index].members,
-                                status: snapshot.data![index].isOnline,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      rowButtons(),
-                      const SizedBox(height: 20),
-                    ],
-                  );
-                }
-              },
+                      if (groups.isEmpty) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.group_off,
+                                size: 80, color: AppStyles().getPrimaryColor()),
+                            const SizedBox(height: 10),
+                            Text(
+                              "No Groups Available",
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  color: AppStyles().getPrimaryColor()),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return ListView.builder(
+                        padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: 24, vertical: 14),
+                        itemCount: groups.length,
+                        itemBuilder: (context, index) {
+                          final group = groups[index];
+
+                          return Slidable(
+                            key: ValueKey(group.groupID),
+                            endActionPane: ActionPane(
+                              motion: const ScrollMotion(),
+                              children: [
+                                // Edit action (only for creators)
+                                if (group.createdByDeviceId == currentDeviceId)
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      EditGroupPopup.show(context, group);
+                                    },
+                                    foregroundColor: Colors.black,
+                                    icon:
+                                        FluentSystemIcons.ic_fluent_edit_filled,
+                                    label: "Edit",
+                                  ),
+
+                                // Delete action (only for creators)
+                                if (group.createdByDeviceId == currentDeviceId)
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      _showDeleteConfirmation(
+                                          context, group.groupID);
+                                    },
+                                    foregroundColor: Colors.red,
+                                    icon: FluentSystemIcons
+                                        .ic_fluent_delete_forever_filled,
+                                    label: 'Delete',
+                                  ),
+
+                                // Leave action (only for non-creators)
+                                if (group.createdByDeviceId != currentDeviceId)
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      _showLeaveConfirmation(
+                                          context, group.groupID);
+                                    },
+                                    foregroundColor: Colors.red,
+                                    icon: FluentSystemIcons
+                                        .ic_fluent_person_leave_filled,
+                                    label: 'Leave',
+                                  ),
+                              ],
+                            ),
+                            child: GroupCard(
+                              groupId: group.groupID,
+                              groupName: group.groupName,
+                              groupIconUrl: group.groupIconUrl,
+                              members: group.members,
+                              status: group
+                                  .isOnline, // ✅ This will now update in real-time
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+                rowButtons(),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         )
       ],
+    );
+  }
+
+  // ✅ Extracted confirmation dialogs for cleaner code
+  void _showDeleteConfirmation(BuildContext context, String groupID) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Confirm Deletion"),
+          content: const Text("Are you sure you want to delete this group?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                GroupManager().deleteGroup(groupID);
+                Navigator.of(context).pop();
+              },
+              child: const Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showLeaveConfirmation(BuildContext context, String groupID) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Confirm Leave"),
+          content: const Text("Are you sure you want to leave this group?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                GroupManager().leaveGroup(groupID);
+                Navigator.of(context).pop();
+              },
+              child: const Text("Leave"),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -232,64 +209,39 @@ class _GroupsWidgetState extends State<GroupsWidget> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton(
-            onPressed: () {
-              CreateGroupPopup.show(context: context);
-              debugPrint("Creating Group");
-            },
-            style: AppStyles().raisedButtonStyle,
-            child: Column(
-              children: [
-                Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 40,
-                ),
-                Text(
-                  'Create',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            )),
-        SizedBox(width: 14),
-        Text(
-          'OR',
-          style: TextStyle(
-            fontSize: 16,
-            color: AppStyles().getPrimaryColor(),
+          onPressed: () {
+            CreateGroupPopup.show(context: context);
+            debugPrint("Creating Group");
+          },
+          style: AppStyles().raisedButtonStyle,
+          child: const Column(
+            children: [
+              Icon(Icons.add, color: Colors.white, size: 40),
+              Text('Create',
+                  style: TextStyle(fontSize: 16, color: Colors.white)),
+            ],
           ),
         ),
-        SizedBox(width: 14),
+        const SizedBox(width: 14),
+        Text(
+          'OR',
+          style: TextStyle(fontSize: 16, color: AppStyles().getPrimaryColor()),
+        ),
+        const SizedBox(width: 14),
         ElevatedButton(
-            onPressed: () {
-              JoinCustomPopup.show(context: context);
-            },
-            style: AppStyles().raisedButtonStyle,
-            child: Column(
-              children: [
-                Icon(
-                  Icons.person_add_alt_outlined,
-                  color: Colors.white,
-                  size: 40,
-                ),
-                Text(
-                  'Join',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            )),
+          onPressed: () {
+            JoinCustomPopup.show(context: context);
+          },
+          style: AppStyles().raisedButtonStyle,
+          child: const Column(
+            children: [
+              Icon(Icons.person_add_alt_outlined,
+                  color: Colors.white, size: 40),
+              Text('Join', style: TextStyle(fontSize: 16, color: Colors.white)),
+            ],
+          ),
+        ),
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    BoxManager().groupBox.listenable().removeListener(_onGroupChanged);
-    super.dispose();
   }
 }

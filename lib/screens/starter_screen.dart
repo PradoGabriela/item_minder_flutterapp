@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/groups_widget.dart';
 import 'package:item_minder_flutterapp/base/widgets/home_app_bar.dart';
@@ -14,6 +15,12 @@ class StarterScreen extends StatefulWidget {
 }
 
 class _StarterScreenState extends State<StarterScreen> {
+  @override
+  void initState() {
+    GroupManager().debugTrackAllGroupStatuses('STARTER_SCREEN_INIT');
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

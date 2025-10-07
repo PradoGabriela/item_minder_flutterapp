@@ -36,6 +36,7 @@ class FirebaseListeners {
    * New groups are added only through GroupManager.joinGroup() method
    */
   Future<void> setupFirebaseListeners() async {
+    GroupManager().debugTrackAllGroupStatuses('BEFORE_FIREBASE_LISTENER');
     // Get current device ID for loop prevention
     final currentDeviceId = DeviceId().getDeviceId();
     final groupsRef = FirebaseDatabase.instance.ref('groups');
@@ -55,6 +56,8 @@ class FirebaseListeners {
         debugPrint('   Last updated by: ${groupData['lastUpdatedBy']}');
         debugPrint('   Current device: $currentDeviceId');
         debugPrint('   Members in Firebase: ${groupData['members']}');
+        debugPrint(
+            '   isOnline in Firebase: ${groupData['isOnline'] ?? 'not set'}');
 
         // LOOP PREVENTION: Skip changes made by this device
         if (groupData['lastUpdatedBy']?.toString() == currentDeviceId) {
@@ -76,6 +79,11 @@ class FirebaseListeners {
         }
 
         if (existingGroup != null) {
+          // ✅ CRITICAL: Preserve local isOnline status BEFORE any updates
+          final preservedOnlineStatus = existingGroup.isOnline;
+
+          debugPrint('🔍 PRESERVING isOnline status: $preservedOnlineStatus');
+
           // MEMBER CHANGE DETECTION: Check if member list actually changed
           final oldMembers = existingGroup.members;
           final newMembers = _extractMembersList(groupData['members']);
@@ -93,11 +101,7 @@ class FirebaseListeners {
             if (memberListChanged) {
               debugPrint(
                   '✅ Processing update due to member list change (overriding timestamp)');
-            } else {
-              debugPrint('✅ Processing update due to newer timestamp');
-            }
 
-            if (memberListChanged) {
               // MEMBER CHANGE DETECTION: Handle both additions and removals
               // Compare old vs new to determine what changed
 
@@ -190,11 +194,15 @@ class FirebaseListeners {
 
               return;
               // This is where you could trigger UI notifications about member changes
+            } else {
+              debugPrint('✅ Processing update due to newer timestamp');
             }
 
             //Check if the Name or Icon have been changed
             if (existingGroup.groupName != groupData['groupName'] ||
                 existingGroup.groupIconUrl != groupData['groupIconUrl']) {
+              groupData
+                  .remove('isOnline'); // Remove isOnline from Firebase data
               GroupManager().editGroupBaseInfoFromFirebase(
                   event.snapshot.key!,
                   groupData['groupName'],
@@ -237,6 +245,7 @@ class FirebaseListeners {
         debugPrint('❌ Error in onChildRemoved listener: $e');
       }
     });
+    GroupManager().debugTrackAllGroupStatuses('AFTER_FIREBASE_LISTENER');
   }
 
   /**

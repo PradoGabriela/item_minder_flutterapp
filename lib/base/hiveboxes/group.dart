@@ -42,7 +42,7 @@ class AppGroup extends HiveObject {
   String createdByDeviceId;
 
   @HiveField(11)
-  bool isOnline = false;
+  bool isOnline;
 
   @HiveField(12)
   String memberName;
@@ -59,7 +59,7 @@ class AppGroup extends HiveObject {
     required this.lastUpdatedBy,
     required this.lastUpdatedDateString,
     required this.createdByDeviceId,
-    required isOnline,
+    required this.isOnline,
     required this.memberName,
   });
 
@@ -79,7 +79,7 @@ class AppGroup extends HiveObject {
           groupData['lastUpdatedDateString'] ?? DateTime.now().toString(),
       createdByDeviceId:
           groupData['createdByDeviceId'] ?? DeviceId().getDeviceId(),
-      isOnline: groupData['isOnline'] ?? false,
+      isOnline: groupData['isOnline'] ?? true,
       memberName: groupData['memberName'] ?? '',
     );
   }

@@ -189,6 +189,7 @@ class EditGroupPopup {
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
                                                   setState(() {
+                                                    value = true;
                                                     newStatus = true;
                                                   });
                                                 },

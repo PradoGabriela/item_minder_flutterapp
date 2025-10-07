@@ -88,7 +88,25 @@ class GroupManager {
   /// **Usage:** Primary method for populating group selection interfaces
   /// and checking user's group membership.
   List<AppGroup> getHiveGroups() {
-    return BoxManager().groupBox.values.toList();
+    final groups = BoxManager().groupBox.values.toList();
+
+    // ✅ ADD DEBUG: Track if groups are being modified during retrieval
+    debugPrint('🔍 GroupManager.getHiveGroups() called:');
+    for (final group in groups) {
+      debugPrint('   Group ${group.groupName}: isOnline=${group.isOnline}');
+    }
+
+    return groups;
+  }
+
+  void debugTrackAllGroupStatuses(String operation) {
+    debugPrint('🔍 [$operation] All group statuses:');
+    final groups = BoxManager().groupBox.values.toList();
+    for (final group in groups) {
+      debugPrint(
+          '   ${group.groupName} (${group.groupID}): isOnline=${group.isOnline}');
+    }
+    debugPrint('🔍 Total groups: ${groups.length}');
   }
 
   /// Creates a new group with full initialization and template population.
@@ -166,7 +184,7 @@ class GroupManager {
       lastUpdatedBy: DeviceId().getDeviceId(),
       lastUpdatedDateString: DateTime.now().toString(),
       createdByDeviceId: DeviceId().getDeviceId(),
-      //When creating the group, is goiung to be always offline first
+      //When creating the group, has to be always offline first
       isOnline: false,
       memberName: memberName,
     );
@@ -299,6 +317,8 @@ class GroupManager {
           );
       final groupToUpdate =
           BoxManager().groupBox.get(group.key); // Get the group from Hive
+
+      debugPrint('❌ IS DISCONNECTING GROUP THIS BEING CALLED?');
       groupToUpdate?.isOnline = false;
       groupToUpdate?.members = [
         groupToUpdate!.memberName
@@ -488,6 +508,11 @@ class GroupManager {
           }
           return false;
         }
+        newGroup.isOnline = true;
+        //print if is online
+        debugPrint(
+            '✅ Joined group from Firebase: ${newGroup.groupName} (isOnline: ${newGroup.isOnline})');
+
         // Add to local storage
         await BoxManager().groupBox.add(newGroup);
         debugPrint('✅ Group added to local Hive: ${newGroup.groupName}');
@@ -808,6 +833,7 @@ class GroupManager {
       final groupToUpdate =
           BoxManager().groupBox.get(group.key); // Get the group from Hive
       if (groupToUpdate != null) {
+        final preservedOnlineStatus = groupToUpdate.isOnline;
         // Check if the group icon URL has changed
         if (groupToUpdate.groupIconUrl != newGroupIconUrl) {
           groupToUpdate.groupIconUrl = newGroupIconUrl;
@@ -820,6 +846,9 @@ class GroupManager {
         }
         groupToUpdate.lastUpdatedBy = lastUpdatedBy;
         groupToUpdate.lastUpdatedDateString = lastUpdatedDateString;
+
+        // ✅ RESTORE PRESERVED STATUS - Never sync isOnline from Firebase
+        groupToUpdate.isOnline = preservedOnlineStatus;
         groupToUpdate.save();
       }
     } catch (e) {

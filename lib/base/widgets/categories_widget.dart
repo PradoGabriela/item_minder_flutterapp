@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/categories_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/item_card.dart';
 import 'package:item_minder_flutterapp/screens/add_item_screen.dart';
@@ -86,10 +87,9 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
     var filteredItems =
         await AppCategories().getItemsByCategory(groupID, category);
     if (kDebugMode) {
+      debugPrint(GroupManager().isGroupOnline(groupID).toString());
       for (var item in filteredItems) {
-        debugPrint(item.key.toString());
         debugPrint(item.type.toString());
-        debugPrint('item quantity ${item.quantity.toString()}');
       }
     }
     return filteredItems;
