@@ -82,10 +82,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     WidgetsBinding.instance.removeObserver(this);
     // ✅ Properly dispose BoxManager without recursion
     BoxManager().dispose();
+    await FirebaseListeners().dispose();
     super.dispose();
   }
 

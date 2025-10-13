@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/bottom_nav_bar.dart';
 
@@ -142,6 +143,8 @@ class _GroupCardState extends State<GroupCard> {
         ),
         child: InkResponse(
           onTap: () {
+            HapticFeedback.lightImpact();
+
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -152,7 +155,7 @@ class _GroupCardState extends State<GroupCard> {
               setState(() {});
             });
           },
-          splashColor: Colors.grey, // Customize splash color
+          splashColor: Colors.white30, // Customize splash color
           child: Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -181,9 +184,8 @@ class _GroupCardState extends State<GroupCard> {
                     Text('Members: ${widget.members.join(', ')}'),
                     SizedBox(height: 4),
                     Text(
-                      widget.status ? " Online" : "Offline",
-                      style: TextStyle(
-                          fontSize: 12), //TODO ADD EMOJI ONLINE AND OFFLINE
+                      widget.status ? " Online 🟢" : "Offline 🔴",
+                      style: TextStyle(fontSize: 12),
                     ),
                   ],
                 ),

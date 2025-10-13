@@ -301,6 +301,7 @@ class GroupManager {
       groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
       groupToUpdate?.save();
       await FirebaseGroupManager().addGroupToFirebase(groupToUpdate!);
+
       await ItemManager().connectAllItems(groupID);
     } catch (e) {
       debugPrint('❌ Error updating ID: $e');
@@ -326,7 +327,7 @@ class GroupManager {
       groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
       groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
       groupToUpdate?.save();
-      await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+      await FirebaseGroupManager().disconnectGroupFromFirebase(groupID);
     } catch (e) {
       debugPrint('❌ Error updating ID: $e');
     }
@@ -438,6 +439,10 @@ class GroupManager {
             orElse: () => throw Exception('Group not found'),
           );
 
+      if (group.isOnline == false) {
+        debugPrint('❌ Cannot remove group that is offline: ${group.groupName}');
+        return;
+      }
       // Remove the group from Hive
       await BoxManager().groupBox.delete(group.key);
       debugPrint('✅ Group removed from Hive: ${group.groupName}');
@@ -564,7 +569,7 @@ class GroupManager {
 
       // Remove the group from Firebase if is an online group
       if (isOnline) {
-        await FirebaseGroupManager().deleteGroupFromFirebase(groupID);
+        await FirebaseGroupManager().disconnectGroupFromFirebase(groupID);
       }
     } catch (e) {
       debugPrint('❌ Error deleting group: $e');

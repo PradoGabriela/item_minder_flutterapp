@@ -9,6 +9,7 @@ import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
 import 'package:item_minder_flutterapp/base/widgets/create_group_popup.dart';
 import 'package:item_minder_flutterapp/base/widgets/edit_group_popup.dart';
 import 'package:item_minder_flutterapp/base/widgets/group_card.dart';
+import 'package:item_minder_flutterapp/base/widgets/invite_members_dialog.dart';
 import 'package:item_minder_flutterapp/base/widgets/join_popup_widget.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
 
@@ -99,6 +100,19 @@ class _GroupsWidgetState extends State<GroupsWidget> {
                                     icon:
                                         FluentSystemIcons.ic_fluent_edit_filled,
                                     label: "Edit",
+                                  ),
+
+                                //For both creator and members if the group is online invite members
+                                if (group.isOnline)
+                                  SlidableAction(
+                                    onPressed: (context) {
+                                      InviteMembersDialog.show(context, group);
+                                    },
+                                    foregroundColor:
+                                        AppStyles().getPrimaryColor(),
+                                    icon: FluentSystemIcons
+                                        .ic_fluent_person_add_filled,
+                                    label: 'Invite',
                                   ),
 
                                 // Delete action (only for creators)

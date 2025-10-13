@@ -169,6 +169,11 @@ class AppStyles {
     ),
   );
 
+  //Dialog background color
+  Color getDialogBackgroundColor() {
+    return Colors.white;
+  }
+
   /// **Singleton instance** for global access to styling.
   ///
   /// Ensures all parts of the app use the same [AppStyles] instance,

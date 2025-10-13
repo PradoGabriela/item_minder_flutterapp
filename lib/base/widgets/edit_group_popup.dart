@@ -6,6 +6,7 @@ import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/res/media.dart';
 import 'package:item_minder_flutterapp/base/res/styles/app_styles.dart';
+import 'package:item_minder_flutterapp/base/widgets/invite_members_dialog.dart';
 
 class EditGroupPopup {
   static Future<bool> show(BuildContext context, AppGroup group) async {
@@ -29,7 +30,7 @@ class EditGroupPopup {
               removeBottom: true,
               context: context,
               child: Dialog(
-                backgroundColor: Colors.white,
+                backgroundColor: AppStyles().getDialogBackgroundColor(),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20.0),
                 ),
@@ -107,33 +108,36 @@ class EditGroupPopup {
                       //Show currents members in the group as chips
                       Wrap(
                         spacing: 8.0,
-                        children: group.members.map((member) {
-                          final isSelected = membersToDelete.contains(member);
+                        children: [
+                          // Existing member chips
+                          ...group.members.map((member) {
+                            final isSelected = membersToDelete.contains(member);
 
-                          return FilterChip(
-                            label: Text(member == group.createdBy
-                                ? '$member 👑'
-                                //change for delete emoji
-                                : '$member ❌'),
-                            selected: isSelected,
-                            backgroundColor: Colors.grey[200],
-                            selectedColor: Colors.red[200],
-                            showCheckmark: false,
-                            onSelected: member == group.createdBy
-                                ? null
-                                : (selected) {
-                                    setState(() {
-                                      if (selected) {
-                                        membersToDelete.add(member);
-                                        //Change the label text adding trash emoji
-                                        member = '$member 🗑️';
-                                      } else {
-                                        membersToDelete.remove(member);
-                                      }
-                                    });
-                                  },
-                          );
-                        }).toList(),
+                            return FilterChip(
+                              label: Text(member == group.createdBy
+                                  ? '$member 👑'
+                                  //change for delete emoji
+                                  : '$member ❌'),
+                              selected: isSelected,
+                              backgroundColor: Colors.grey[200],
+                              selectedColor: Colors.red[200],
+                              showCheckmark: false,
+                              onSelected: member == group.createdBy
+                                  ? null
+                                  : (selected) {
+                                      setState(() {
+                                        if (selected) {
+                                          membersToDelete.add(member);
+                                          //Change the label text adding trash emoji
+                                          member = '$member 🗑️';
+                                        } else {
+                                          membersToDelete.remove(member);
+                                        }
+                                      });
+                                    },
+                            );
+                          }),
+                        ],
                       ),
 
                       SizedBox(height: 20),
@@ -174,6 +178,8 @@ class EditGroupPopup {
                                               '⚠️ Are you sure you want to set the group status to online? 🟢\n\n'
                                               'This means you won\'t be able to use offline mode anymore.',
                                             ),
+                                            backgroundColor: AppStyles()
+                                                .getDialogBackgroundColor(),
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
@@ -211,6 +217,8 @@ class EditGroupPopup {
                                               '⚠️ Are you sure you want to set the group status to offline? 📴\n\n'
                                               'This will remove all members 👥 from the group and delete it 🗑️ from the database.',
                                             ),
+                                            backgroundColor: AppStyles()
+                                                .getDialogBackgroundColor(),
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
@@ -285,7 +293,8 @@ class EditGroupPopup {
                                       }
                                       return;
                                     }
-
+                                    final bool _oldStatus = group.isOnline;
+                                    bool _wasChangedToOnline = false;
                                     setState(() => isLoading = true);
                                     try {
                                       await GroupManager().editGroupBaseInfo(
@@ -296,10 +305,99 @@ class EditGroupPopup {
                                           membersToDelete,
                                           newStatus);
                                       success = true;
-                                    } finally {
+                                      // Store the status change for after dialog closes
+                                      _wasChangedToOnline =
+                                          newStatus && !_oldStatus;
                                       if (context.mounted) {
                                         setState(() => isLoading = false);
                                         Navigator.pop(context, success);
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        setState(() => isLoading = false);
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                              content: Text(
+                                                  'Error updating group: $e')),
+                                        );
+                                      }
+                                    } finally {
+                                      // Show invite prompt AFTER the edit dialog closes
+                                      if (_wasChangedToOnline &&
+                                          context.mounted) {
+                                        await showDialog<bool>(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20.0),
+                                              ),
+                                              title: Row(
+                                                children: [
+                                                  Icon(
+                                                    FontAwesomeIcons.userPlus,
+                                                    color: AppStyles()
+                                                        .getPrimaryColor(),
+                                                    size: 20,
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Text('Group is Online! 🟢'),
+                                                ],
+                                              ),
+                                              content: Text(
+                                                'Your group is now online and ready for collaboration!\n\n'
+                                                'Would you like to invite members to join your group?',
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                              backgroundColor: AppStyles()
+                                                  .getDialogBackgroundColor(),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .pop(),
+                                                  child: Text(
+                                                    'Not Now',
+                                                    style: TextStyle(
+                                                      color: Colors.grey[600],
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: AppStyles()
+                                                        .getPrimaryColor(),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8),
+                                                    ),
+                                                  ),
+                                                  onPressed: () async {
+                                                    Navigator.of(context)
+                                                        .pop(); // Close edit dialog first
+                                                    await InviteMembersDialog
+                                                        .show(context, group);
+                                                  },
+                                                  child: Text(
+                                                    'Invite Members ➕',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
                                       }
                                     }
                                   },

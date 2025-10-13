@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
+import 'package:item_minder_flutterapp/listeners/firebase_listeners.dart';
 import 'package:item_minder_flutterapp/services/connectivity_service.dart';
 
 class FirebaseGroupManager {
@@ -14,7 +15,9 @@ class FirebaseGroupManager {
   }
 
   FirebaseGroupManager._internal() {
-    // Initialization code here
+    if (kDebugMode) {
+      debugPrint('🔥 FirebaseGroupManager initialized');
+    }
   }
   get firebaseDatabase => FirebaseDatabase.instance;
   get ref => FirebaseDatabase.instance.ref('groups');
@@ -43,17 +46,19 @@ class FirebaseGroupManager {
           'isOnline': group.isOnline,
         },
       );
+      //Add Listener for that group
+      await FirebaseListeners().addGroupListener(group.groupID);
     } catch (e) {
       debugPrint('❌ Firebase Group write failed: $e');
     }
   }
 
 //delete Group
-  Future<void> deleteGroupFromFirebase(String groupId) async {
+  Future<void> disconnectGroupFromFirebase(String groupId) async {
     if (!await ConnectivityService().isOnline) {
       debugPrint(
           '❌ No internet connection. Cannot delete group from Firebase.');
-      //TODO: show snackbar or dialog to inform the user
+
       return;
     }
     // Check if the group exists in Firebase before attempting to delete
@@ -63,7 +68,10 @@ class FirebaseGroupManager {
       return;
     }
     try {
+      //Remove listener for that group
+      await FirebaseListeners().removeGroupListener(groupId);
       await ref.child(groupId).remove();
+
       debugPrint('✅ Group deleted from Firebase: $groupId');
     } catch (e) {
       debugPrint('❌ Firebase Group delete failed: $e');
@@ -167,7 +175,7 @@ class FirebaseGroupManager {
         isOnline: true,
         memberName: newMember,
       );
-
+      await FirebaseListeners().addGroupListener(group.groupID);
       return group;
     } catch (e) {
       debugPrint('❌ Failed to join group: $e');
@@ -242,6 +250,9 @@ class FirebaseGroupManager {
 
       debugPrint('✅ Group member removed from Firebase: $memberID');
       debugPrint('   Remaining members: $currentMembers');
+
+      //Remove the listener for the removed member
+      await FirebaseListeners().removeGroupListener(groupID);
     } catch (e) {
       debugPrint('❌ Firebase Group member removal failed: $e');
     }
