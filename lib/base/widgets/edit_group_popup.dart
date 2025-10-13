@@ -21,6 +21,7 @@ class EditGroupPopup {
 
     await showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
@@ -117,9 +118,9 @@ class EditGroupPopup {
                               label: Text(member == group.createdBy
                                   ? '$member 👑'
                                   //change for delete emoji
-                                  : '$member ❌'),
+                                  : '$member '),
                               selected: isSelected,
-                              backgroundColor: Colors.grey[200],
+                              backgroundColor: Colors.white,
                               selectedColor: Colors.red[200],
                               showCheckmark: false,
                               onSelected: member == group.createdBy
@@ -171,35 +172,133 @@ class EditGroupPopup {
                                     if (newStatus) {
                                       showDialog(
                                         context: context,
+                                        barrierDismissible: false,
                                         builder: (context) {
                                           return AlertDialog(
-                                            title: Text('Confirm'),
-                                            content: Text(
-                                              '⚠️ Are you sure you want to set the group status to online? 🟢\n\n'
-                                              'This means you won\'t be able to use offline mode anymore.',
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20.0),
                                             ),
                                             backgroundColor: AppStyles()
                                                 .getDialogBackgroundColor(),
+                                            title: Row(
+                                              children: [
+                                                Icon(
+                                                  FontAwesomeIcons.wifi,
+                                                  color: Colors.green[600],
+                                                  size: 20,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Go Online 🟢',
+                                                  style: AppStyles()
+                                                      .dialogTextStyleTitle,
+                                                ),
+                                              ],
+                                            ),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '⚠️ Are you sure you want to set the group status to online?',
+                                                  style: AppStyles()
+                                                      .dialogTextStylePrimary,
+                                                ),
+                                                SizedBox(height: 12),
+                                                Container(
+                                                  padding: EdgeInsets.all(12),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green[50],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    border: Border.all(
+                                                        color:
+                                                            Colors.green[200]!),
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                            FontAwesomeIcons
+                                                                .circleInfo,
+                                                            size: 16,
+                                                            color: Colors
+                                                                .green[600],
+                                                          ),
+                                                          SizedBox(width: 8),
+                                                          Text(
+                                                            'This action will:',
+                                                            style: AppStyles()
+                                                                .dialogTextStyleColorfull
+                                                                .copyWith(
+                                                                    color: Colors
+                                                                        .black),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(height: 8),
+                                                      Text(
+                                                        '• Allow real-time collaboration 👥\n'
+                                                        '• Sync data across all devices 📱',
+                                                        style: AppStyles()
+                                                            .dialogTextStyleColorfull
+                                                            .copyWith(
+                                                                color: Colors
+                                                                    .black),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 8),
+                                                Text(
+                                                  'You can still switch back to offline mode later.',
+                                                  style: AppStyles()
+                                                      .tooltipTextStyle,
+                                                ),
+                                              ],
+                                            ),
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
                                                   setState(() {
-                                                    value = false;
                                                     newStatus = false;
                                                   });
                                                   Navigator.of(context).pop();
                                                 },
-                                                child: Text('Cancel'),
+                                                child: Text(
+                                                  'Cancel',
+                                                  style: AppStyles()
+                                                      .dialogTextStyleCancel,
+                                                ),
                                               ),
-                                              TextButton(
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.green[600],
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                ),
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
                                                   setState(() {
-                                                    value = true;
                                                     newStatus = true;
                                                   });
                                                 },
-                                                child: Text('OK'),
+                                                child: Text(
+                                                  'Go Online 🟢',
+                                                  style: AppStyles()
+                                                      .dialogTextStyleAccept,
+                                                ),
                                               ),
                                             ],
                                           );
@@ -210,38 +309,130 @@ class EditGroupPopup {
                                     if (!newStatus) {
                                       showDialog(
                                         context: context,
+                                        barrierDismissible: false,
                                         builder: (context) {
                                           return AlertDialog(
-                                            title: Text('Confirm'),
-                                            content: Text(
-                                              '⚠️ Are you sure you want to set the group status to offline? 📴\n\n'
-                                              'This will remove all members 👥 from the group and delete it 🗑️ from the database.',
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20.0),
                                             ),
                                             backgroundColor: AppStyles()
                                                 .getDialogBackgroundColor(),
+                                            title: Row(
+                                              children: [
+                                                Icon(
+                                                  FontAwesomeIcons.wifi,
+                                                  color: Colors.red[600],
+                                                  size: 20,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Go Offline 🔴 ',
+                                                  style: AppStyles()
+                                                      .dialogTextStyleTitle,
+                                                ),
+                                              ],
+                                            ),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '⚠️ Are you sure you want to set the group status to offline?',
+                                                  style: AppStyles()
+                                                      .dialogTextStylePrimary,
+                                                ),
+                                                SizedBox(height: 12),
+                                                Container(
+                                                  padding: EdgeInsets.all(12),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red[50],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    border: Border.all(
+                                                        color:
+                                                            Colors.red[200]!),
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Icon(
+                                                              FontAwesomeIcons
+                                                                  .triangleExclamation,
+                                                              size: 16,
+                                                              color: Colors
+                                                                  .red[600]),
+                                                          SizedBox(width: 8),
+                                                          Text(
+                                                            'This action will:',
+                                                            style: AppStyles()
+                                                                .dialogTextStyleColorfull,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(height: 8),
+                                                      Text(
+                                                        '• Remove all members from the group 👥\n'
+                                                        '• Delete the group from the database 🗑️\n'
+                                                        '• Switch to local-only mode',
+                                                        style: AppStyles()
+                                                            .dialogTextStyleColorfull,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SizedBox(height: 8),
+                                                Text(
+                                                  'This action cannot be undone.',
+                                                  style: AppStyles()
+                                                      .tooltipTextStyle,
+                                                ),
+                                              ],
+                                            ),
                                             actions: [
                                               TextButton(
                                                 onPressed: () {
                                                   setState(() {
-                                                    value = true;
                                                     newStatus = true;
                                                   });
                                                   Navigator.of(context).pop();
                                                 },
-                                                child: Text('Cancel'),
+                                                child: Text(
+                                                  'Cancel',
+                                                  style: AppStyles()
+                                                      .dialogTextStyleCancel,
+                                                ),
                                               ),
-                                              TextButton(
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.red[600],
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                ),
                                                 onPressed: () {
                                                   Navigator.of(context).pop();
                                                   setState(() {
                                                     newStatus = false;
                                                   });
                                                 },
-                                                child: Text('OK'),
+                                                child: Text(
+                                                  'Go Offline 📴',
+                                                  style: AppStyles()
+                                                      .dialogTextStyleAccept,
+                                                ),
                                               ),
                                             ],
                                           );
-                                          //if newStatus is true show a dialog that says the group is going to become an online and the user wont be able to use offline anymore
                                         },
                                       );
                                     }
@@ -293,6 +484,149 @@ class EditGroupPopup {
                                       }
                                       return;
                                     }
+                                    //if members to delete is not empty, ask the user if is sure to delete the members and show members to delete
+                                    if (membersToDelete.isNotEmpty) {
+                                      final confirm = await showDialog<bool>(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20.0),
+                                            ),
+                                            backgroundColor: AppStyles()
+                                                .getDialogBackgroundColor(),
+                                            title: Row(
+                                              children: [
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  'Remove Members 👥',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            content: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '⚠️ Are you sure you want to remove the following members from the group?',
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 12),
+                                                Container(
+                                                  padding: EdgeInsets.all(12),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red[50],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    border: Border.all(
+                                                        color:
+                                                            Colors.red[200]!),
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: membersToDelete
+                                                        .map(
+                                                          (member) => Padding(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
+                                                                    vertical:
+                                                                        2),
+                                                            child: Row(
+                                                              children: [
+                                                                Icon(
+                                                                    FontAwesomeIcons
+                                                                        .user,
+                                                                    size: 12,
+                                                                    color: Colors
+                                                                            .red[
+                                                                        600]),
+                                                                SizedBox(
+                                                                    width: 6),
+                                                                Text(
+                                                                  member,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    color: Colors
+                                                                            .red[
+                                                                        700],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        )
+                                                        .toList(),
+                                                  ),
+                                                ),
+                                                SizedBox(height: 8),
+                                                Text(
+                                                  'This action cannot be undone.',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey[600],
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop(false),
+                                                child: Text(
+                                                  'Cancel',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ),
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: AppStyles()
+                                                      .getPrimaryColor(),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                ),
+                                                onPressed: () =>
+                                                    Navigator.of(context)
+                                                        .pop(true),
+                                                child: Text(
+                                                  'Remove 🗑️',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                      if (confirm != true) {
+                                        return;
+                                      }
+                                    }
+
                                     final bool _oldStatus = group.isOnline;
                                     bool _wasChangedToOnline = false;
                                     setState(() => isLoading = true);

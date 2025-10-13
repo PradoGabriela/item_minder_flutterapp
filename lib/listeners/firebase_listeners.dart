@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/firebase_item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/device_id.dart';
@@ -79,7 +80,7 @@ class FirebaseListeners {
       try {
         if (!event.snapshot.exists) {
           // GROUP DELETED: Handle deletion of this specific group
-          debugPrint('🗑️ Group deleted: $groupID');
+
           await _handleGroupDeletion(groupID);
 
           // Remove the listener since group no longer exists
@@ -108,28 +109,17 @@ class FirebaseListeners {
   Future<void> _handleGroupDeletion(String groupID) async {
     try {
       final existingGroup = GroupManager().getGroupByID(groupID);
-
-      if (existingGroup != null) {
+      bool canBeDeleted = existingGroup!.isOnline;
+      if (existingGroup != null && canBeDeleted) {
         debugPrint('🗑️ Processing deletion of user group: $groupID');
-
-        // Clean up all items associated with this group
-        final groupItemsToRemove = existingGroup.itemsID;
-        if (groupItemsToRemove.isNotEmpty) {
-          await ItemManager().removeItemsByIDs(groupItemsToRemove);
-          debugPrint(
-              '✅ ${groupItemsToRemove.length} items removed from local storage');
-        }
-
-        // Remove the group from local storage
-        await GroupManager().removeGroupFromHiveBox(groupID);
-        debugPrint('✅ Group successfully removed from local storage');
 
         // Notify Firebase Group Manager
         final firebaseGroupManager = FirebaseGroupManager();
-        firebaseGroupManager.deletedGroupDetected(groupID);
+        // Remove the group from local storage
+        await firebaseGroupManager.deletedGroupDetected(groupID);
       } else {
         debugPrint(
-            '⚠️ Group deletion detected but group not found locally: $groupID');
+            '⚠️ Group deletion detected but stay in local storage (user not a member or offline)');
       }
     } catch (e) {
       debugPrint('❌ Error handling group deletion for $groupID: $e');
@@ -150,8 +140,7 @@ class FirebaseListeners {
 
       // LOOP PREVENTION: Skip changes made by this device
       if (groupData['lastUpdatedBy']?.toString() == currentDeviceId) {
-        debugPrint(
-            '🔄 Skipping group change - updated by current device: $currentDeviceId');
+        debugPrint('🔄 Skipping Self Update');
         return;
       }
 
@@ -213,6 +202,11 @@ class FirebaseListeners {
         } else {
           debugPrint(
               '❌ No updates needed - timestamps equal and no member changes');
+        }
+
+        //Handle Item Changes if shouldUpdateByTimestamp is true
+        if (shouldUpdateByTimestamp) {
+          await _handleItemChanges(existingGroup, groupData, groupID);
         }
       } else {
         // This should rarely happen since we only listen to user's groups
@@ -288,17 +282,7 @@ class FirebaseListeners {
         '   🗑️ Deleting group and associated items from local storage...');
 
     try {
-      // Step 1: Clean up all items associated with this group
-      final groupItemsToRemove = existingGroup.itemsID;
-      if (groupItemsToRemove.isNotEmpty) {
-        await ItemManager().removeItemsByIDs(groupItemsToRemove);
-        debugPrint(
-            '✅ ${groupItemsToRemove.length} items removed from local storage');
-      }
-
-      // Step 2: Remove the group from local Hive storage
-      await GroupManager().removeGroupFromHiveBox(groupID);
-      debugPrint('✅ Group successfully removed from local storage');
+      await FirebaseGroupManager().deletedGroupDetected(groupID);
 
       // Optional: Trigger UI notification about removal
       // NotificationManager().showMemberRemovedNotification(existingGroup.groupName);
@@ -366,82 +350,20 @@ class FirebaseListeners {
   }
 
   // ============================================================================
-  // HELPER METHODS (unchanged from your existing implementation)
+  // HELPER METHODS FOR GROUP UPDATE HANDLING
+  // These methods encapsulate complex logic for clarity and maintainability
   // ============================================================================
 
   /**
-   * HELPER METHOD: Synchronizes all items from a Firebase group to local storage
-   */
-  Future<void> _syncGroupItems(DatabaseReference groupsRef,
-      Map<String, dynamic> groupData, String groupKey) async {
-    try {
-      if (groupData['itemsID'] != null) {
-        List<String> itemIDs = [];
-
-        if (groupData['itemsID'] is Map) {
-          itemIDs = (groupData['itemsID'] as Map)
-              .keys
-              .map((key) => key.toString())
-              .toList();
-        } else if (groupData['itemsID'] is List) {
-          itemIDs = List<String>.from(groupData['itemsID']);
-        }
-
-        debugPrint('🔄 Syncing ${itemIDs.length} items for group: $groupKey');
-
-        for (var itemID in itemIDs) {
-          try {
-            final itemSnapshot = await groupsRef
-                .child(groupData['groupID'].toString())
-                .child("itemsID")
-                .child(itemID.toString())
-                .once();
-
-            if (itemSnapshot.snapshot.value != null) {
-              final itemData =
-                  Map<String, dynamic>.from(itemSnapshot.snapshot.value as Map);
-
-              final existingItem = ItemManager().findItemByID(itemID);
-
-              if (existingItem == null) {
-                final item = AppItem.fromJson(itemData);
-                await ItemManager().addItemFromFirebase(item);
-                debugPrint(
-                    '🆕 Item synced from Firebase: $itemID (${item.type})');
-              } else {
-                final firebaseItem = AppItem.fromJson(itemData);
-                if (ItemManager()
-                    .shouldUpdateItem(existingItem, firebaseItem)) {
-                  await ItemManager()
-                      .editItemFromFirebase(itemID, firebaseItem);
-                  debugPrint(
-                      '🔄 Item updated from Firebase: $itemID (${firebaseItem.type})');
-                }
-              }
-            } else {
-              debugPrint('⚠️ Item data not found in Firebase: $itemID');
-            }
-          } catch (e) {
-            debugPrint('❌ Error syncing item $itemID: $e');
-          }
-        }
-
-        debugPrint('✅ Completed syncing items for group: $groupKey');
-      }
-    } catch (e) {
-      debugPrint('❌ Error in _syncGroupItems: $e');
-    }
-  }
-
-  /**
    * HELPER METHOD: Handles complex item synchronization between Firebase and local storage
+   * OPTIMIZED: Works directly with group ID instead of requiring groupsRef parameter
    */
-  Future<void> _handleItemChanges(
-      DatabaseReference groupsRef,
-      AppGroup existingGroup,
-      Map<String, dynamic> groupData,
-      String groupKey) async {
+  Future<void> _handleItemChanges(AppGroup existingGroup,
+      Map<String, dynamic> groupData, String groupID) async {
     try {
+      debugPrint('🔄 Processing item changes for group: $groupID');
+
+      // Extract itemIDs from Firebase data
       List<String> newItemIDs = [];
       if (groupData['itemsID'] is Map) {
         newItemIDs = (groupData['itemsID'] as Map)
@@ -454,68 +376,69 @@ class FirebaseListeners {
 
       final oldItemIDs = existingGroup.itemsID;
 
-      // STEP 1: REMOVE DELETED ITEMS
-      for (var itemID in oldItemIDs) {
-        if (!newItemIDs.contains(itemID)) {
-          final success = await ItemManager().removeItemByID(itemID);
-          if (success) {
-            debugPrint('🗑️ Item removed from group: $itemID');
-          }
+      debugPrint('   📊 Old items count: ${oldItemIDs.length}');
+      debugPrint('   📊 New items count: ${newItemIDs.length}');
+      debugPrint('   📊 Old items: $oldItemIDs');
+      debugPrint('   📊 New items: $newItemIDs');
+
+      // STEP 1: IDENTIFY NEW ITEMS
+      final itemsToAdd =
+          newItemIDs.where((itemID) => !oldItemIDs.contains(itemID)).toList();
+      debugPrint('   🆕 Items to add: $itemsToAdd');
+
+      // STEP 2: IDENTIFY REMOVED ITEMS
+      final itemsToRemove =
+          oldItemIDs.where((itemID) => !newItemIDs.contains(itemID)).toList();
+      debugPrint('   🗑️ Items to remove: $itemsToRemove');
+
+      // STEP 3: REMOVE DELETED ITEMS
+      for (var itemID in itemsToRemove) {
+        final success = await ItemManager().removeItemByID(itemID);
+        if (success) {
+          debugPrint('🗑️ Item removed from group: $itemID');
         }
       }
 
-      // STEP 2: ADD NEW ITEMS
+      // STEP 4: ADD NEW ITEMS + UPDATE EXISTING ITEMS
+      final groupItemsRef = FirebaseDatabase.instance
+          .ref('groups')
+          .child(groupID)
+          .child("itemsID");
+
       for (var itemID in newItemIDs) {
-        if (!oldItemIDs.contains(itemID)) {
-          try {
-            final itemSnapshot = await groupsRef
-                .child(groupData['groupID'].toString())
-                .child("itemsID")
-                .child(itemID.toString())
-                .once();
+        try {
+          final itemSnapshot = await groupItemsRef.child(itemID).once();
 
-            if (itemSnapshot.snapshot.value != null) {
-              final itemData =
-                  Map<String, dynamic>.from(itemSnapshot.snapshot.value as Map);
-              final item = AppItem.fromJson(itemData);
-              await ItemManager().addItemFromFirebase(item);
-              debugPrint('🆕 New item added to group: $itemID (${item.type})');
-            }
-          } catch (e) {
-            debugPrint('❌ Error adding new item $itemID: $e');
-          }
-        }
-      }
+          if (itemSnapshot.snapshot.value != null) {
+            final existingItem = ItemManager().findItemByID(itemID);
+            final firebaseItem = await FirebaseItemManager()
+                .fetchItemFromFirebase(groupID, itemID);
+            if (existingItem == null) {
+              // NEW ITEM: Add to local storage
+              debugPrint('🆕 Adding new item from Firebase: $itemID');
 
-      // STEP 3: UPDATE MODIFIED ITEMS
-      for (var itemID in newItemIDs) {
-        if (oldItemIDs.contains(itemID)) {
-          try {
-            final itemSnapshot = await groupsRef
-                .child(groupData['groupID'].toString())
-                .child("itemsID")
-                .child(itemID.toString())
-                .once();
+              if (firebaseItem != null) {
+                await ItemManager().addItemFromFirebase(firebaseItem);
+              }
 
-            if (itemSnapshot.snapshot.value != null) {
-              final itemData =
-                  Map<String, dynamic>.from(itemSnapshot.snapshot.value as Map);
-              final localItem = ItemManager().findItemByID(itemID);
-
-              if (localItem != null) {
-                final firebaseItem = AppItem.fromJson(itemData);
-                if (ItemManager().shouldUpdateItem(localItem, firebaseItem)) {
-                  await ItemManager()
-                      .editItemFromFirebase(itemID, firebaseItem);
-                  debugPrint('🔄 Item updated: $itemID (${firebaseItem.type})');
-                }
+              debugPrint(
+                  '✅ New item added to group: $itemID (${firebaseItem?.type})');
+            } else {
+              // EXISTING ITEM: Check if update needed
+              if (ItemManager().shouldUpdateItem(existingItem, firebaseItem!)) {
+                await ItemManager().editItemFromFirebase(itemID, firebaseItem);
+                debugPrint('🔄 Item updated: $itemID (${firebaseItem.type})');
               }
             }
-          } catch (e) {
-            debugPrint('❌ Error updating item $itemID: $e');
+          } else {
+            debugPrint('⚠️ Item data not found in Firebase: $itemID');
           }
+        } catch (e) {
+          debugPrint('❌ Error processing item $itemID: $e');
         }
       }
+
+      debugPrint('✅ Completed item sync for group: $groupID');
     } catch (e) {
       debugPrint('❌ Error in _handleItemChanges: $e');
     }

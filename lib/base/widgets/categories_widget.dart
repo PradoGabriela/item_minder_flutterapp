@@ -115,6 +115,7 @@ class _CategoriesWidgetState extends State<CategoriesWidget> {
   }
 
   _onItemsChanged() {
+    if (!mounted) return;
     setState(() {
       // This will trigger a rebuild when the items in the box change
       _onCategorySwipped(_selectedIndex);

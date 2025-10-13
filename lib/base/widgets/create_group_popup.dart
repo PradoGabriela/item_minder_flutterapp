@@ -25,8 +25,6 @@ class CreateGroupPopup {
         return StatefulBuilder(
           builder: (context, setState) {
             bool isLoading = false;
-            final isLandscape =
-                MediaQuery.of(context).orientation == Orientation.landscape;
 
             return MediaQuery.removeViewInsets(
               removeBottom: true,

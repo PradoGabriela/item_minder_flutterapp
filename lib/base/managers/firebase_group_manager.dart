@@ -81,6 +81,7 @@ class FirebaseGroupManager {
 //Update deleted group form Firebase and them delete it fomr hivebox
   Future<void> deletedGroupDetected(String groupId) async {
     await GroupManager().removeGroupFromHiveBox(groupId);
+    debugPrint('✅ Group successfully removed from local storage');
   }
 
   //update only lastUpdatedDateString and LastUpdatedBy
@@ -206,7 +207,7 @@ class FirebaseGroupManager {
     }
   }
 
-  //remove member in firebase
+  // Remove member in firebase
   Future<void> removeGroupMemberFromFirebase(String groupID, String memberID,
       String lastUpdatedBy, String lastUpdatedDateString) async {
     if (!await ConnectivityService().isOnline) {
@@ -298,6 +299,53 @@ class FirebaseGroupManager {
           '✅ Group icon URL updated in Firebase: ${passGroup.groupIconUrl}');
     } catch (e) {
       debugPrint('❌ Firebase Group icon URL update failed: $e');
+    }
+  }
+
+  /// Adds a single item ID to the group's itemsID map in Firebase
+  /// This is more efficient than updating the entire itemsID field
+  Future<void> addSingleItemToGroupInFirebase(
+      String groupID, String newItemID) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot add item to group.');
+      return;
+    }
+
+    try {
+      // Add the new item directly to the itemsID map
+      await ref.child(groupID).child('itemsID').child(newItemID).set(true);
+
+      debugPrint('✅ Single item added to Firebase group: $newItemID');
+    } catch (e) {
+      debugPrint('❌ Firebase single item addition failed: $e');
+    }
+  }
+
+  /// Removes a single item ID from the group's itemsID map in Firebase
+  /// This is more efficient than updating the entire itemsID field
+  Future<void> removeSingleItemFromGroupInFirebase(
+      String groupID,
+      String itemIDToRemove,
+      String lastUpdatedBy,
+      String lastUpdatedDateString) async {
+    if (!await ConnectivityService().isOnline) {
+      debugPrint('❌ No internet connection. Cannot remove item from group.');
+      return;
+    }
+
+    try {
+      // Remove the specific item from the itemsID map
+      await ref.child(groupID).child('itemsID').child(itemIDToRemove).remove();
+
+      // Update the group's metadata
+      await ref.child(groupID).update({
+        'lastUpdatedBy': lastUpdatedBy,
+        'lastUpdatedDateString': lastUpdatedDateString,
+      });
+
+      debugPrint('✅ Single item removed from Firebase group: $itemIDToRemove');
+    } catch (e) {
+      debugPrint('❌ Firebase single item removal failed: $e');
     }
   }
 

@@ -59,7 +59,7 @@ class _GroupsWidgetState extends State<GroupsWidget> {
                   child: ValueListenableBuilder<Box<AppGroup>>(
                     valueListenable: BoxManager().groupBox.listenable(),
                     builder: (context, box, _) {
-                      final groups = GroupManager().getHiveGroups();
+                      final groups = box.values.toList();
 
                       if (groups.isEmpty) {
                         return Column(
@@ -171,21 +171,90 @@ class _GroupsWidgetState extends State<GroupsWidget> {
   void _showDeleteConfirmation(BuildContext context, String groupID) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Confirm Deletion"),
-          content: const Text("Are you sure you want to delete this group?"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          backgroundColor: AppStyles().getDialogBackgroundColor(),
+          title: Row(
+            children: [
+              Icon(
+                FluentSystemIcons.ic_fluent_delete_forever_filled,
+                color: Colors.red[600],
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Delete Group ',
+                style: AppStyles().dialogTextStyleTitle,
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '⚠️ Are you sure you want to delete this group?',
+                style: AppStyles().dialogTextStylePrimary,
+              ),
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FluentSystemIcons.ic_fluent_warning_filled,
+                      size: 16,
+                      color: Colors.red[600],
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This will permanently delete all items and data in this group.',
+                        style: AppStyles().dialogTextStyleColorfull,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'This action cannot be undone.',
+                style: AppStyles().tooltipTextStyle,
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel"),
+              child: Text(
+                'Cancel',
+                style: AppStyles().dialogTextStyleCancel,
+              ),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppStyles().getPrimaryColor(),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               onPressed: () {
                 GroupManager().deleteGroup(groupID);
                 Navigator.of(context).pop();
               },
-              child: const Text("Delete"),
+              child: Text(
+                'Delete 🗑️',
+                style: AppStyles().dialogTextStyleAccept,
+              ),
             ),
           ],
         );
@@ -196,21 +265,90 @@ class _GroupsWidgetState extends State<GroupsWidget> {
   void _showLeaveConfirmation(BuildContext context, String groupID) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Confirm Leave"),
-          content: const Text("Are you sure you want to leave this group?"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          backgroundColor: AppStyles().getDialogBackgroundColor(),
+          title: Row(
+            children: [
+              Icon(
+                FluentSystemIcons.ic_fluent_person_leave_filled,
+                color: AppStyles().getPrimaryColor(),
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Leave Group ',
+                style: AppStyles().dialogTextStyleTitle,
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('⚠️ Are you sure you want to leave this group?',
+                  style: AppStyles().dialogTextStylePrimary),
+              SizedBox(height: 12),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      FluentSystemIcons.ic_fluent_info_filled,
+                      size: 16,
+                      color: Colors.orange[600],
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'You will lose access to all items and data in this group.',
+                        style: AppStyles()
+                            .dialogTextStyleColorfull
+                            .copyWith(color: Colors.orange[700]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'You can rejoin if invited again.',
+                style: AppStyles().tooltipTextStyle,
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Cancel"),
+              child: Text(
+                'Cancel',
+                style: AppStyles().dialogTextStyleCancel,
+              ),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppStyles().getPrimaryColor(),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
               onPressed: () {
                 GroupManager().leaveGroup(groupID);
                 Navigator.of(context).pop();
               },
-              child: const Text("Leave"),
+              child: Text(
+                'Leave 👋',
+                style: AppStyles().dialogTextStyleAccept,
+              ),
             ),
           ],
         );

@@ -192,17 +192,12 @@ class ItemManager {
       await BoxManager().itemBox.add(customItem);
       debugPrint("Custom item key item added to box ID: ${customItem.itemID}");
 
-      await GroupManager().addItemToGroup(groupID, itemID);
-
-      if (GroupManager().isGroupOnline(groupID)) {
-        await FirebaseItemManager()
-            .addItemToFirebase(groupID, customItem, itemID); // Add to Firebase
-      }
+      await GroupManager()
+          .addItemToGroup(customItem, customItem.groupID, customItem.itemID);
 
       if (kDebugMode) {
         print(
             "Custom item added: ${customItem.toString()}, key: ${customItem.itemID}, itemType: ${customItem.type}, itemCategory: ${customItem.category}");
-        //print(BoxManager().itemBox.values.toList());
       }
     } catch (e) {
       if (kDebugMode) {
@@ -690,9 +685,13 @@ class ItemManager {
   Future<void> addItemFromFirebase(AppItem firebaseItem) async {
     try {
       await BoxManager().itemBox.add(firebaseItem);
+      // ✅ FIXED: Use correct GroupManager method signature
+      await GroupManager().addItemToGroupFromFirebase(
+          firebaseItem, firebaseItem.groupID, firebaseItem.itemID);
+
       if (kDebugMode) {
         print(
-            '🆕 Item added from Firebase: ${firebaseItem.itemID} (${firebaseItem.type})');
+            '🆕 Item added from Firebase to Item Box: ${firebaseItem.itemID} (${firebaseItem.type})');
       }
     } catch (e) {
       if (kDebugMode) {
@@ -875,6 +874,25 @@ class ItemManager {
           print('❌ Error fetching/adding item $itemID for group $groupID: $e');
         }
       }
+    }
+  }
+
+  Future<void> removeAllItemsOfGroup(String groupID) async {
+    final itemsToRemove = getItemsInGroup(groupID);
+
+    // Use putAll for batch operations instead of individual deletes
+    final Map<dynamic, AppItem?> deleteMap = {};
+    for (var item in itemsToRemove) {
+      if (item.key != null) {
+        deleteMap[item.key!] = null; // null value = delete
+      }
+    }
+
+    // Single batch operation instead of multiple individual deletes
+    if (deleteMap.isNotEmpty) {
+      await BoxManager().itemBox.deleteAll(deleteMap.keys);
+      debugPrint(
+          '✅ ${itemsToRemove.length} items removed from local storage (batch operation)');
     }
   }
 }

@@ -129,6 +129,39 @@ class AppStyles {
     color: Colors.black87,
   );
 
+  //Cancel Dialog Text
+  static final TextStyle _dialogTextStyleCancel = TextStyle(
+    color: Colors.grey[600],
+    fontWeight: FontWeight.w500,
+  );
+
+  //Confirmation Dialog Text1
+  static const TextStyle _dialogTextStylePrimary = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+  );
+
+  //Acceptance Dialog Text
+  static const TextStyle _dialogTextStyleAccept = TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w600,
+  );
+
+  //Dialog tooltip text style
+  static final TextStyle _tooltipTextStyle = TextStyle(
+    fontSize: 12,
+    color: Colors.grey[600],
+    fontStyle: FontStyle.italic,
+  );
+
+//Title Text style dialog
+  static final TextStyle _dialogTextStyleTitle =
+      TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+
+  //Confirmation Dialog Text colorfull
+  static final TextStyle _dialogTextStyleColorfull = TextStyle(
+      fontSize: 12, fontWeight: FontWeight.w500, color: Colors.red[700]);
+
   /// **Standard button style** for primary actions.
   ///
   /// Defines the visual appearance of primary action buttons throughout the app.
@@ -295,5 +328,35 @@ class AppStyles {
   /// important secondary actions like "Create Group" and "Join Group".
   ButtonStyle get raisedButtonStyle {
     return _raisedButtonStyleCustom;
+  }
+
+  //**Dialog Text Styles */ for primary information
+  TextStyle get dialogTextStylePrimary {
+    return _dialogTextStylePrimary;
+  }
+
+  //**Dialog Text Styles */ for colorfull information
+  TextStyle get dialogTextStyleColorfull {
+    return _dialogTextStyleColorfull;
+  }
+
+  //**Tooltip Text Styles */ for tooltip information
+  TextStyle get tooltipTextStyle {
+    return _tooltipTextStyle;
+  }
+
+  //**Dialog Text Styles */ for cancel information
+  TextStyle get dialogTextStyleCancel {
+    return _dialogTextStyleCancel;
+  }
+
+  //**Dialog Text Styles */ for title information
+  TextStyle get dialogTextStyleTitle {
+    return _dialogTextStyleTitle;
+  }
+
+  //**Dialog Text Styles */ for accept information
+  TextStyle get dialogTextStyleAccept {
+    return _dialogTextStyleAccept;
   }
 }

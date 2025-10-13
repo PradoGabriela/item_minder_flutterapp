@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
 import 'package:item_minder_flutterapp/base/managers/notification_manager.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/notification.dart';
@@ -16,6 +17,12 @@ import 'package:item_minder_flutterapp/base/managers/group_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lock orientation to portrait only
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   DeviceId().initId();
   await Hive.initFlutter();
   Hive.registerAdapter(AppItemAdapter());

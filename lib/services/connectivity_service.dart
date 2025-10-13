@@ -22,7 +22,7 @@ class ConnectivityService {
   //Check Connectivity
   Future<bool> get isOnline async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    debugPrint('Connectivity result: $connectivityResult');
+    // debugPrint('Connectivity result: $connectivityResult');
     return connectivityResult != ConnectivityResult.none;
   }
 }

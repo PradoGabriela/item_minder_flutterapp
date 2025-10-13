@@ -1,11 +1,11 @@
-import 'dart:math';
-
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:item_minder_flutterapp/base/hiveboxes/group.dart';
+import 'package:item_minder_flutterapp/base/hiveboxes/item.dart';
 import 'package:item_minder_flutterapp/base/managers/box_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/firebase_group_manager.dart';
+import 'package:item_minder_flutterapp/base/managers/firebase_item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/item_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/shopping_manager.dart';
 import 'package:item_minder_flutterapp/base/managers/templates_manager.dart';
@@ -350,6 +350,7 @@ class GroupManager {
 
   //add an item to the group with the groupID
   Future<void> addItemToGroup(
+    AppItem item,
     String groupID,
     String itemID,
   ) async {
@@ -365,14 +366,52 @@ class GroupManager {
           BoxManager().groupBox.get(group.key); // Get the group from Hive
       if (groupToUpdate != null && !groupToUpdate.itemsID.contains(itemID)) {
         groupToUpdate.itemsID.add(itemID);
+        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
+        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
+        groupToUpdate.save();
+        if (groupToUpdate.isOnline) {
+          await FirebaseGroupManager()
+              .addSingleItemToGroupInFirebase(groupToUpdate.groupID, itemID);
+          await FirebaseItemManager().addItemToFirebase(groupID, item, itemID);
+          await FirebaseGroupManager().updateGroupLastUpdated(
+              groupID,
+              item.lastUpdatedBy,
+              item.lastUpdated
+                  .toString()); // Update the group timestamp in Firebase
+        }
+      } else {
+        if (kDebugMode) {
+          print("Group is offline, skipping Firebase sync.");
+        }
       }
-      groupToUpdate?.lastUpdatedBy = DeviceId().getDeviceId();
-      groupToUpdate?.lastUpdatedDateString = DateTime.now().toString();
-      groupToUpdate?.save();
-      // Update the group in Firebase
-      //await FirebaseGroupManager().updateListInGroupInFirebase(groupToUpdate!); //todo UPDATE IN ANOTHER FUNCTION
     } catch (e) {
       debugPrint('❌ Error adding item to group: $e');
+    }
+  }
+
+  Future<void> addItemToGroupFromFirebase(
+    AppItem item,
+    String groupID,
+    String itemID,
+  ) async {
+    try {
+      // Find the group by ID
+      final group = BoxManager().groupBox.values.firstWhere(
+            (group) => group.groupID == groupID,
+            orElse: () => throw Exception('Group not found'),
+          );
+
+      // Add the item ID to the group's itemsID list
+      final groupToUpdate =
+          BoxManager().groupBox.get(group.key); // Get the group from Hive
+      if (groupToUpdate != null && !groupToUpdate.itemsID.contains(itemID)) {
+        groupToUpdate.itemsID.add(itemID);
+        groupToUpdate.lastUpdatedBy = DeviceId().getDeviceId();
+        groupToUpdate.lastUpdatedDateString = DateTime.now().toString();
+        groupToUpdate.save();
+      }
+    } catch (e) {
+      debugPrint('❌ Error adding item to group from Firebase: $e');
     }
   }
 
@@ -443,6 +482,9 @@ class GroupManager {
         debugPrint('❌ Cannot remove group that is offline: ${group.groupName}');
         return;
       }
+// Remove all items associated with the group
+      await ItemManager().removeAllItemsOfGroup(group.groupID);
+
       // Remove the group from Hive
       await BoxManager().groupBox.delete(group.key);
       debugPrint('✅ Group removed from Hive: ${group.groupName}');
@@ -563,6 +605,8 @@ class GroupManager {
       String groupName = group.groupName;
       bool isOnline = group.isOnline;
 
+// Remove all items associated with the group
+      await ItemManager().removeAllItemsOfGroup(group.groupID);
       // Remove the group from Hive
       await BoxManager().groupBox.delete(group.key);
       debugPrint('✅ Group removed from Hive: $groupName');
