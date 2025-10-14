@@ -107,6 +107,53 @@ class ItemCard extends StatefulWidget {
 /// for the [ItemCard] widget. Manages the card's response to user input
 /// and ensures proper state management during navigation operations.
 class _ItemCardState extends State<ItemCard> {
+  /// **Formats item type string** with proper capitalization and length trimming.
+  ///
+  /// Capitalizes the first letter and trims the string to 18 characters max
+  /// (20 - 2 for ellipsis) following Item Minder's display standards.
+  ///
+  /// **Parameters:**
+  /// * [itemType] - The raw item type string from [AppItem]
+  ///
+  /// **Returns:** Formatted string ready for UI display
+  String _formatItemType(String itemType) {
+    if (itemType.isEmpty) return '';
+
+    // Capitalize first letter + rest of string
+    final capitalizedType = itemType[0].toUpperCase() + itemType.substring(1);
+
+    // Trim to 18 characters if longer than 20 (leaving 2 chars for ellipsis)
+    if (capitalizedType.length > 17) {
+      return '${capitalizedType.substring(0, 15)}...';
+    }
+
+    return capitalizedType;
+  }
+
+  /// **Formats brand name string** with length trimming for compact display.
+  ///
+  /// Trims brand name to 10 characters max (12 - 2 for ellipsis) to maintain
+  /// consistent card layout and prevent text overflow in ItemCard display.
+  ///
+  /// **Parameters:**
+  /// * [brandName] - The brand name string from [AppItem.brandName]
+  ///
+  /// **Returns:** Formatted brand name ready for UI display or empty string
+  String _formatBrandName(String? brandName) {
+    if (brandName == null ||
+        brandName.isEmpty ||
+        brandName == "No Brand Provided") {
+      return '';
+    }
+
+    // Trim to 10 characters if longer than 12 (leaving 2 chars for ellipsis)
+    if (brandName.length > 14) {
+      return '${brandName.substring(0, 12)}...';
+    }
+
+    return brandName;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -168,18 +215,16 @@ class _ItemCardState extends State<ItemCard> {
                               0.05, // 5% of the parent's height
                         ),
                         Text(
-                            widget.itemType[0].toUpperCase() +
-                                widget.itemType.substring(1),
-                            style: AppStyles().titleStyle,
-                            textAlign: TextAlign.center),
+                          _formatItemType(widget.itemType),
+                          style: AppStyles().titleStyle,
+                          textAlign: TextAlign.center,
+                        ),
                         Text(
-                          (widget.myItem.brandName != null &&
-                                  widget.myItem.brandName !=
-                                      "No Brand Provided")
-                              ? widget.myItem.brandName
-                              : "",
+                          _formatBrandName(widget.myItem.brandName),
                           style: AppStyles().titleStyle.copyWith(
-                              fontWeight: FontWeight.normal, fontSize: 12),
+                                fontWeight: FontWeight.normal,
+                                fontSize: 12,
+                              ),
                         ),
                         Container(
                           height: constraints.maxHeight *
@@ -197,7 +242,7 @@ class _ItemCardState extends State<ItemCard> {
                         ),
                         SizedBox(
                           height: constraints.maxHeight *
-                              0.2, // 5% of the parent's height
+                              0.2, // % of the parent's height
                           child: AppBottomButtons(passItem: widget.myItem),
                         )
                       ],
